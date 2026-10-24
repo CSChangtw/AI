@@ -1,0 +1,264 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Copywriting Project 安裝說明書</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@600;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: single reading column, manual-style section numbering in a left margin label, sticky mini-TOC on wide screens */
+:root{
+  --bg:#f6f7f5; --surface:#ffffff; --fg:#1b2320; --muted:#5b6762; --line:#d9dfdb;
+  --accent:#0d6b5b; --accent-soft:#e3f0ec; --warn:#c2410c; --warn-soft:#fdeee6; --code-bg:#eef1ef;
+  --f-display:"Noto Serif TC","Songti TC",serif;
+  --f-body:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#121715; --surface:#1a201e; --fg:#e4ebe7; --muted:#9aa8a2; --line:#2e3834;
+  --accent:#5cc4ae; --accent-soft:#1d332e; --warn:#ff8a57; --warn-soft:#3a231a; --code-bg:#202826; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#121715; --surface:#1a201e; --fg:#e4ebe7; --muted:#9aa8a2; --line:#2e3834;
+  --accent:#5cc4ae; --accent-soft:#1d332e; --warn:#ff8a57; --warn-soft:#3a231a; --code-bg:#202826; color-scheme:dark}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:clamp(15px,0.9rem + 0.25vw,17px);line-height:1.8;margin:0;overflow-wrap:break-word}
+.key{color:var(--warn);font-weight:700}
+.wrap{max-width:min(960px,100%);margin:0 auto;padding-block:clamp(24px,5vw,48px) 72px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header{border-bottom:2px solid var(--fg);padding-bottom:20px;margin-bottom:8px}
+.doc-meta{font-family:var(--f-mono);font-size:12.5px;color:var(--muted);letter-spacing:.04em;display:flex;flex-wrap:wrap;gap:6px 18px}
+h1{font-family:var(--f-display);font-weight:900;font-size:clamp(28px,5vw,40px);line-height:1.25;margin:12px 0 10px;text-wrap:balance}
+.lede{color:var(--muted);max-width:62ch;margin:0}
+section{display:grid;grid-template-columns:72px minmax(0,1fr);gap:0 20px;padding-block:28px;border-bottom:1px solid var(--line)}
+.secno{font-family:var(--f-mono);font-size:13px;color:var(--accent);padding-top:6px;letter-spacing:.05em}
+h2{font-family:var(--f-display);font-weight:600;font-size:22px;margin:0 0 12px;text-wrap:balance}
+h3{font-size:16px;font-weight:700;margin:20px 0 6px}
+p{margin:0 0 12px;max-width:66ch}
+code,.mono{font-family:var(--f-mono);font-size:.88em;background:var(--code-bg);padding:1px 6px;border-radius:4px}
+.tbl{margin:8px 0 4px;max-width:100%}
+table{border-collapse:collapse;width:100%;font-size:.92em}
+th,td{text-align:left;vertical-align:top;padding:10px 12px;border-bottom:1px solid var(--line);overflow-wrap:anywhere}
+th{font-size:12.5px;font-weight:700;color:var(--muted);letter-spacing:.06em;border-bottom:1.5px solid var(--fg)}
+td:first-child{font-weight:500;width:26%}
+td code{white-space:normal;overflow-wrap:anywhere}
+/* Narrow screens: each table row becomes a stacked card, labels from the header */
+@media (max-width:680px){
+  table,tbody,tr,td{display:block;width:100%}
+  thead{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+  tr{border:1px solid var(--line);border-radius:8px;background:var(--surface);padding:6px 14px;margin-bottom:10px}
+  td,td:first-child{width:100%;border:0;padding:6px 0;display:grid;grid-template-columns:5.5em minmax(0,1fr);gap:10px}
+  td+td{border-top:1px dashed var(--line)}
+  td::before{content:attr(data-label);font-size:12.5px;font-weight:700;color:var(--muted);letter-spacing:.04em;padding-top:2px}
+}
+ol.steps{list-style:none;counter-reset:s;padding:0;margin:0;display:grid;gap:14px}
+ol.steps>li{counter-increment:s;display:grid;grid-template-columns:34px minmax(0,1fr);gap:12px}
+ol.steps>li::before{content:counter(s);font-family:var(--f-mono);font-weight:500;width:30px;height:30px;border-radius:50%;
+  border:1.5px solid var(--accent);color:var(--accent);display:grid;place-items:center;font-size:13.5px;margin-top:2px}
+ol.steps strong{display:block}
+.tag{display:inline-block;font-size:12px;font-weight:700;padding:1px 8px;border-radius:999px;background:var(--accent-soft);color:var(--accent);margin-left:6px;vertical-align:2px}
+.note{background:var(--warn-soft);border-left:3px solid var(--warn);padding:12px 16px;border-radius:0 6px 6px 0;margin:14px 0 4px;font-size:14.5px}
+.note b{color:var(--warn)}
+.note ul{margin:6px 0 0;padding-left:1.2em}
+.note li{margin-bottom:4px}
+.paste{border:1px solid var(--line);border-radius:8px;background:var(--surface);margin-top:12px}
+.paste-bar{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:8px 12px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.paste-bar span{font-family:var(--f-mono);font-size:12.5px;color:var(--muted)}
+button{font:inherit;font-size:14px;font-weight:500;padding:6px 14px;border-radius:6px;border:1px solid var(--accent);background:var(--accent);color:var(--bg);cursor:pointer}
+button:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+pre#inst{margin:0;padding:14px 16px;max-height:380px;overflow:auto;font-family:var(--f-mono);font-size:13px;line-height:1.7;white-space:pre-wrap;word-break:break-word;color:var(--fg)}
+details{border-top:1px solid var(--line);padding:6px 0}
+details:last-of-type{border-bottom:1px solid var(--line)}
+summary{cursor:pointer;font-weight:500;padding:6px 0}
+details p{margin:4px 0 10px;color:var(--muted)}
+ul.ex{margin:0;padding-left:1.2em}
+ul.ex li{margin-bottom:6px}
+footer{font-size:13px;color:var(--muted);padding-top:24px}
+@media (max-width:680px){section{grid-template-columns:minmax(0,1fr)}.secno{padding-top:0;margin-bottom:4px}
+  .paste-bar{flex-direction:column;align-items:stretch}.paste-bar button{width:100%}pre#inst{max-height:300px;font-size:12.5px}}
+@media (min-width:1280px){.wrap{max-width:1040px}section{grid-template-columns:96px minmax(0,1fr)}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+<header>
+  <div class="doc-meta"><span>DOC · CW-CHATGPT-01</span><span>來源 copywriting skill v2.3.1</span><span>移植日期 2026-10-23</span></div>
+  <h1>Copywriting ChatGPT Project 安裝說明書</h1>
+  <p class="lede">將 Claude 版 copywriting skill 建置為 ChatGPT Project。完成後，在該 Project 內開新對話即可撰寫、改寫行銷文案，並依 AI Tells 清單自檢。</p>
+</header>
+
+<section id="files">
+  <div class="secno">§1</div>
+  <div>
+    <h2>封裝內容</h2>
+    <p>解壓 <code>copywriting_chatgpt_project.zip</code> 後可得以下檔案。<strong class="key">上傳名額僅使用 1 個</strong>，其餘名額可放產品資料。</p>
+    <div class="tbl"><table>
+      <thead><tr><th>檔案</th><th>用途</th><th>放置位置</th></tr></thead>
+      <tbody>
+        <tr><td data-label="檔案"><code>instructions.md</code></td><td data-label="用途">Project 指示：角色、工作流程、禁用寫法、輸出格式（約 2,900 字元）</td><td data-label="放置位置">全文貼入 Project「Instructions」，<strong class="key">不佔上傳名額</strong></td></tr>
+        <tr><td data-label="檔案"><code>copywriting_skill.md</code></td><td data-label="用途">合併知識檔 PART 1–4：英文原文，附中文目錄與移植註</td><td data-label="放置位置"><strong class="key">上傳至 Project「Files」</strong></td></tr>
+        <tr><td data-label="檔案"><code>README.md</code></td><td data-label="用途">純文字版安裝說明</td><td data-label="放置位置">不需上傳</td></tr>
+        <tr><td data-label="檔案"><code>install_guide.html</code></td><td data-label="用途">本說明書</td><td data-label="放置位置">不需上傳</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+</section>
+
+<section id="install">
+  <div class="secno">§2</div>
+  <div>
+    <h2>安裝步驟</h2>
+    <ol class="steps">
+      <li><div><strong>建立 Project</strong>登入 chatgpt.com，於側欄 Projects 新增一個 Project，建議命名為「Copywriting」。</div></li>
+      <li><div><strong>貼上 Instructions</strong>開啟該 Project 的 Instructions 設定，貼入 <code>instructions.md</code> 全文後<strong class="key">務必儲存</strong>。可直接使用 §3 的「複製全文」按鈕。</div></li>
+      <li><div><strong>上傳知識檔</strong>在 Project 的 Files 加入 <code>copywriting_skill.md</code>。<strong class="key">此檔不可貼入 Instructions</strong>，須以檔案上傳。</div></li>
+      <li><div><strong>上傳產品脈絡</strong><span class="tag">選用</span>若有產品行銷資料（產品、客群、差異點、證據、Learnings），整理為 <code>product-marketing.md</code> 一併上傳。指示會要求先讀此檔，只追問缺漏資訊。</div></li>
+      <li><div><strong>驗證</strong>在 Project 內開新對話，貼一段 hero 文案並要求「只修 headline」。<strong class="key">正確行為：先給一行情境診斷（C），再只回傳修改句與一行理由。</strong></div></li>
+    </ol>
+    <div class="note"><b>注意事項</b>
+      <ul>
+        <li><strong class="key">對話必須在該 Project 內開啟</strong>；一般對話不會套用 Instructions 與知識檔。</li>
+        <li>知識檔規則為英文原文，<strong class="key">AI Tells 詞彙黑名單與 em dash 規則僅適用英文文案</strong>。</li>
+        <li><strong class="key">不得捏造數據、客戶或見證</strong>；缺證據時會標示 <code>[NEED: ...]</code>，需由使用者補齊。</li>
+        <li>原 skill 的關聯 skill（copy-editing、emails、popups、offers 等）<strong class="key">未包含於本 Project</strong>。</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section id="paste">
+  <div class="secno">§3</div>
+  <div>
+    <h2>Instructions 全文</h2>
+    <p>以下內容與 <code>instructions.md</code> 相同，複製後貼入 Project 的 Instructions 欄位。</p>
+    <div class="paste">
+      <div class="paste-bar"><span>instructions.md</span><button type="button" id="copyBtn">複製全文</button></div>
+      <pre id="inst"># 角色
+你是資深轉換文案撰稿人（conversion copywriter）。目標：寫出清楚、具說服力、能驅動行動的行銷文案。
+
+適用情境：撰寫、改寫或強化首頁、landing page、定價頁、功能頁、關於我們頁、產品頁文案；headline、CTA、value proposition、tagline、hero section；使用者說「這段文案很弱」「聽起來像 AI 寫的」「AI slop」「讓它像人寫的」「幫我描述我的產品」。
+
+# 知識檔
+本 Project 的 copywriting_skill.md 為完整規則來源（英文原文），分四部：
+- PART 1 Core Playbook：撰寫前資訊、情境診斷、Drafting Protocol、原則、頁面結構、CTA、輸出格式。每次撰寫前查閱。
+- PART 2 Copy Frameworks：標題公式、區塊類型、頁面模板、"Now you can" 測試、Human Action Model、Perception Gap。擬標題與規劃頁面時查閱。
+- PART 3 AI Tells：Ban／Cap 清單、Build a Writer、Rewrite Rules、The Self-Check。交稿前必查。
+- PART 4 Natural Transitions：轉折語。長文銜接時查閱。
+規則以知識檔為準；知識檔未規定者不自行增補。
+
+# 工作流程
+1. 產品脈絡：先檢查 Project 檔案與對話中是否已有產品行銷脈絡（如 product-marketing.md）；有則先讀，並看其 Learnings 區（已測過的角度與主張不可當新點子重提）。只詢問缺少的資訊。
+2. 蒐集（缺則問）：頁面類型與唯一主要行動；目標客群、其問題、疑慮與慣用語；產品、差異、關鍵轉變、證據；流量來源與訪客既有認知。
+3. 診斷，一行並附證據：
+   - A. Blank or slop：一句話需求或空泛公司腔。可自定角度，不可捏造事實。
+   - B. Real voice present：草稿已有角度或語氣。保留其論點與用詞，只修埋沒的重點、模糊句、AI tells 與結構。
+   - C. Point edit：只改被要求的部分及必要的銜接，其餘原樣奉還。
+   B、C 情境：用詞是語氣選擇、篇幅分配是優先順序、未寫的是範圍選擇、其角度即定位。附寫作樣本時，模仿其句長、標點、段落開頭與特有用詞。
+4. Decompose and lock：拆成具名單元（headline、subhead、CTA、各區標題與內文、證據句），每單元擬 2–3 個候選，留最佳、修其最大缺陷、鎖定；最後通讀整頁。B 情境中已成立的句子一開始即鎖定。
+5. 三問閘門（每一句）：讀者能想像嗎？能被證實或證偽嗎？競品能寫出完全相同的句子嗎（swap test）？三過保留；兩過強化弱項；一過以下依事實重寫，或標示 [NEED: ...]。
+6. Ration the punch：多數句子平實、具體、直述；整頁只留 1–2 處重拳（通常是 headline 與一個區段）。
+7. Leave-it-alone test：每項修改須說得出「更好」的理由，否則還原（B、C 尤其重要）。
+8. 交稿前執行 PART 3 › The Self-Check。
+
+# 絕對禁止（Never write these）
+1. Contrast reveals：「It's not X, it's Y」「Not because X. Because Y」「Not just X, but Y」。直接陳述 Y 與理由。
+2. Negation lists：「No X, no Y, no Z」。改說實際發生什麼；真實的「沒有」只在 CTA 旁講一次（如 "No card required"）。
+3. Trailing pile-ons：完整主張後再接逗號串連子句。在主張處結束句子。
+4. Self-answered questions 與 colon reveals：「The result? 3x faster.」「The best part: it learns.」直接說。FAQ 與讀者口吻的問句可用。
+5. Stock openers：「In today's fast-paced world」「Whether you're X or Y」「Here's the thing」「Say goodbye to」「X, reimagined」「Unlock the power of」「Take it to the next level」。
+6. 短文案（headline、subhead、廣告、社群貼文、email 主旨）不用 em dash。
+限用：每區段最多一個 fragment、一組三項列舉；seamless、robust、powerful、unlock、streamline 改寫為其所代表的事實。完整清單見 PART 3。
+
+# 主張必須可支持
+只寫來源資料能支持的主張；不得捏造統計、客戶、見證或成果。拒寫某主張時，不得默默刪除，須：指名該主張 → 說明不足之處 → 提供最接近的可支持替代 → 指明能解鎖原主張的證據（評論匯出、書面保證政策、認證、可引用研究或資料集）。缺證據或差異點時標 [NEED: proof]、[NEED: differentiator]。
+
+# 輸出格式
+- C 情境：只回傳修改的句子，每句附一行理由。
+- 完整頁面：Page Copy（依區塊：Headline、Subheadline、CTA、各區標題與內文、次要 CTA）→ Annotations（關鍵選擇的理由與所依原則）→ Alternatives（headline 與 CTA 各 2–3 案，附 Rationale）→ Meta Content（如適用：SEO page title、meta description）。
+
+# 語言
+- 說明、診斷與註解以使用者的提問語言回覆（中文時用繁體中文、台灣用語）。
+- 文案本身使用使用者指定的目標語言；未指定且無法從脈絡判斷時，先詢問。
+- 知識檔的 AI Tells 規則原文係針對英文文案。【移植延伸，非原文】撰寫中文文案時，結構類規則（上列 1–4 及 PART 3 Structural Patterns）仍適用；英文詞彙黑名單與 em dash 規則僅適用英文文案。
+
+# 範圍外
+原 skill 的關聯 skill（copy-editing、cro、emails、popups、ab-testing、offers）未包含於本 Project。遇 email 文案、popup 文案、offer 設計（bonus、guarantee、value framing）時，告知使用者本 Project 未含該專門規則。</pre>
+    </div>
+  </div>
+</section>
+
+<section id="kb">
+  <div class="secno">§4</div>
+  <div>
+    <h2>知識檔結構</h2>
+    <p><code>copywriting_skill.md</code> 依原 skill 四個檔案順序合併，<strong class="key">規則內文保留英文原文，未增刪。</strong></p>
+    <div class="tbl"><table>
+      <thead><tr><th>PART</th><th>原始檔</th><th>何時查閱</th></tr></thead>
+      <tbody>
+        <tr><td data-label="PART">1 Core Playbook</td><td data-label="原始檔"><code>SKILL.md</code></td><td data-label="何時查閱">每次撰寫或改寫前：情境診斷 A／B／C、Drafting Protocol、頁面結構、CTA、輸出格式</td></tr>
+        <tr><td data-label="PART">2 Copy Frameworks</td><td data-label="原始檔"><code>copy-frameworks.md</code></td><td data-label="何時查閱">擬標題、規劃頁面結構；"Now you can" 測試、Human Action Model、Perception Gap</td></tr>
+        <tr><td data-label="PART">3 AI Tells</td><td data-label="原始檔"><code>ai-tells.md</code></td><td data-label="何時查閱">交稿前 The Self-Check；使用者反映「像 AI 寫的」時</td></tr>
+        <tr><td data-label="PART">4 Natural Transitions</td><td data-label="原始檔"><code>natural-transitions.md</code></td><td data-label="何時查閱">長文段落銜接</td></tr>
+      </tbody>
+    </table></div>
+    <div class="note"><b>標示規則</b>　因平台差異所做的調整，在知識檔內一律標<strong class="key">「【ChatGPT 移植註】」</strong>；Instructions 中唯一新增的規則（中文文案的適用範圍）標<strong class="key">「【移植延伸，非原文】」</strong>，不需要時可整段刪除。</div>
+  </div>
+</section>
+
+<section id="diff">
+  <div class="secno">§5</div>
+  <div>
+    <h2>與 Claude 版的差異</h2>
+    <div class="tbl"><table>
+      <thead><tr><th>項目</th><th>Claude 版</th><th>ChatGPT Project 版</th></tr></thead>
+      <tbody>
+        <tr><td data-label="項目">啟用方式</td><td data-label="Claude 版">依 description 自動觸發</td><td data-label="ChatGPT Project 版">在 Project 內對話即生效</td></tr>
+        <tr><td data-label="項目">參考檔</td><td data-label="Claude 版"><code>references/</code> 三檔，需要時開啟</td><td data-label="ChatGPT Project 版">合併為單一知識檔 PART 2–4</td></tr>
+        <tr><td data-label="項目">產品脈絡</td><td data-label="Claude 版">讀取 <code>.agents/product-marketing.md</code></td><td data-label="ChatGPT Project 版">讀取 Project 檔案或對話內容</td></tr>
+        <tr><td data-label="項目">關聯 skill</td><td data-label="Claude 版">copy-editing、cro、emails、popups、ab-testing、offers</td><td data-label="ChatGPT Project 版">未包含；遇相關需求時告知未涵蓋</td></tr>
+        <tr><td data-label="項目">回覆語言</td><td data-label="Claude 版">未規定</td><td data-label="ChatGPT Project 版">說明用提問語言（中文為繁體、台灣用語）；文案用指定目標語言</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+</section>
+
+<section id="use">
+  <div class="secno">§6</div>
+  <div>
+    <h2>使用範例</h2>
+    <ul class="ex">
+      <li>「幫我寫一個 SaaS 排程工具的 landing page，目標客群是自由接案者，主要行動是註冊免費試用。」→ 情境 A，完整輸出 Page Copy、Annotations、Alternatives。</li>
+      <li>「這段 hero 文案聽起來像 AI 寫的，幫我改。」（附原文）→ 依原文判斷 A 或 B，並執行 PART 3 自檢。</li>
+      <li>「只修這個 headline：……」→ 情境 C，只回傳修改句與一行理由。</li>
+      <li>「幫我寫『業界第一』的標語。」→ 若無證據，會拒寫並說明需要哪項證據才能使用此主張。</li>
+    </ul>
+  </div>
+</section>
+
+<section id="faq">
+  <div class="secno">§7</div>
+  <div>
+    <h2>疑難排解</h2>
+    <details><summary>回覆沒有先給情境診斷</summary><p>確認 <strong class="key">Instructions 已完整貼上並儲存</strong>，且<strong class="key">對話是在該 Project 內開啟</strong>，而非一般對話。</p></details>
+    <details><summary>文案出現 "It's not X, it's Y" 或 "No X, no Y" 等寫法</summary><p>要求<strong class="key">「依 PART 3 The Self-Check 重新自檢」</strong>。若仍反覆出現，確認知識檔已上傳成功。</p></details>
+    <details><summary>一直追問產品資訊</summary><p>將產品、客群、差異點與證據整理成 <strong class="key">product-marketing.md 上傳至 Project Files</strong>，之後只會詢問缺漏項目。</p></details>
+    <details><summary>需要 email、popup 或 offer 設計</summary><p>原 skill 將這些交由其他專門 skill 處理，本 Project 未包含，會告知未涵蓋。需要時可另行轉換對應 skill。</p></details>
+  </div>
+</section>
+
+<footer>copywriting skill v2.3.1 → ChatGPT Project 移植版｜整理日期 2026-10-23</footer>
+</div>
+
+<script>
+(function(){
+  var btn=document.getElementById('copyBtn'), pre=document.getElementById('inst');
+  function selectText(){var r=document.createRange();r.selectNodeContents(pre);var s=window.getSelection();s.removeAllRanges();s.addRange(r);}
+  btn.addEventListener('click',function(){
+    var t=pre.textContent;
+    function done(msg){btn.textContent=msg;setTimeout(function(){btn.textContent='複製全文';},1800);}
+    try{
+      navigator.clipboard.writeText(t).then(function(){done('已複製');},function(){selectText();done('已選取，請按 Ctrl+C');});
+    }catch(e){selectText();done('已選取，請按 Ctrl+C');}
+  });
+})();
+</script>
+
+</body></html>

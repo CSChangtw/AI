@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Claude Project 安裝說明</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#1f2933;--muted:#5f6b7a;--line:#d5dbe3;--paper:#fff;--bg:#f4f6f8;--accent:#1d4e89;--soft:#eef3f9;--warn:#b26a00;--warnbg:#fff6e5;--ok:#2E7D32;--bad:#C62828;--code:#0f1720;--codeink:#e6edf3}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--ink:#e6e9ee;--muted:#a3adba;--line:#384250;--paper:#1b2029;--bg:#12161d;--accent:#7fb0ec;--soft:#222b38;--warnbg:#3a2e17;--warn:#f0b65a}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Noto Sans TC","Microsoft JhengHei","PingFang TC",sans-serif;font-size:16px;line-height:1.8}
+.page{max-width:880px;margin:24px auto;background:var(--paper);padding:44px 52px;border-radius:8px}
+@media (max-width:700px){.page{margin:0;padding:24px 16px;border-radius:0}}
+header{border-bottom:3px solid var(--accent);padding-bottom:14px;margin-bottom:8px}
+h1{font-size:26px;line-height:1.4;margin:0;color:var(--accent)}
+.sub{color:var(--muted);margin:6px 0 0;font-size:14px}
+nav.toc{background:var(--soft);border-radius:6px;padding:12px 18px;margin:20px 0;font-size:15px}
+nav.toc ol{margin:4px 0;padding-left:22px;columns:2;column-gap:28px}
+@media (max-width:600px){nav.toc ol{columns:1}}
+nav a{color:var(--accent);text-decoration:none}
+h2{font-size:20px;margin:40px 0 12px;color:var(--accent);scroll-margin-top:12px}
+h2 .n{display:inline-block;width:30px;height:30px;line-height:30px;text-align:center;border-radius:50%;background:var(--accent);color:var(--paper);font-size:15px;margin-right:8px}
+h3{font-size:17px;margin:22px 0 6px}
+table{width:100%;border-collapse:collapse;margin:10px 0 16px;font-size:15px}
+th,td{border:1px solid var(--line);padding:7px 10px;text-align:left;vertical-align:top}
+th{background:var(--soft);font-weight:500}
+.wrap{overflow-x:auto}
+code{font-family:Consolas,"SFMono-Regular",monospace;font-size:.92em;background:var(--soft);padding:1px 5px;border-radius:3px}
+.step{border-left:4px solid var(--accent);background:var(--soft);padding:10px 16px;margin:12px 0;border-radius:0 6px 6px 0}
+.step b.t{color:var(--accent)}
+.warn{border-left:4px solid var(--warn);background:var(--warnbg);padding:10px 16px;margin:12px 0;border-radius:0 6px 6px 0}
+.check li{list-style:none;margin-left:-20px}
+.check li::before{content:"☐ ";color:var(--accent)}
+.codebox{position:relative;margin:10px 0 18px}
+.codebox pre{background:var(--code);color:var(--codeink);padding:16px;border-radius:6px;max-height:420px;overflow:auto;font-size:13px;line-height:1.6;white-space:pre-wrap;word-break:break-word;margin:0}
+.copy{position:absolute;right:10px;top:10px;background:var(--accent);color:#fff;border:0;border-radius:4px;padding:5px 12px;font:500 13px "Noto Sans TC",sans-serif;cursor:pointer}
+.prompt{background:var(--soft);border:1px dashed var(--line);border-radius:6px;padding:8px 12px;margin:6px 0;font-size:15px}
+.tree{font-family:Consolas,monospace;font-size:14px;background:var(--soft);padding:12px 16px;border-radius:6px;line-height:1.6;white-space:pre;overflow-x:auto}
+footer{margin-top:40px;padding-top:12px;border-top:1px solid var(--line);color:var(--muted);font-size:13px}
+@media print{body{background:#fff}.page{margin:0;max-width:none;padding:0}.copy{display:none}.codebox pre{max-height:none;background:#f4f4f4;color:#111}h2{page-break-after:avoid}@page{size:A4;margin:16mm 14mm}}
+
+/* 響應式與重點提醒 */
+:root{--key:#D84315}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--key:#FF8A65}}
+html{-webkit-text-size-adjust:100%}
+body{font-size:clamp(15px,0.55vw + 13px,17px)}
+.page{width:100%;max-width:min(1100px,100%);margin:clamp(0px,2vw,24px) auto;padding:clamp(18px,4vw,52px) clamp(16px,5vw,56px);border-radius:clamp(0px,1vw,8px)}
+h1{font-size:clamp(21px,2.4vw + 12px,30px)}
+h2{font-size:clamp(18px,1.2vw + 13px,22px)}
+img,pre,table{max-width:100%}
+.key,strong.key{color:var(--key);font-weight:700}
+.warn{border-left-color:var(--key)}
+.warn,.warn b{color:var(--key);font-weight:700}
+.warn code{color:var(--key)}
+@media (min-width:1300px){nav.toc ol{columns:3}}
+/* 窄螢幕：表格改為卡片 */
+@media (max-width:640px){
+  .wrap table,.wrap thead,.wrap tbody,.wrap tr,.wrap td{display:block;width:100%}
+  .wrap tr:first-child{display:none}
+  .wrap tr{border:1px solid var(--line);border-radius:6px;margin:0 0 12px;padding:6px 10px;background:var(--paper)}
+  .wrap td{border:0;border-bottom:1px dashed var(--line);padding:6px 0}
+  .wrap td:last-child{border-bottom:0}
+  .wrap td:first-child{font-weight:700;color:var(--accent);padding-top:2px}
+  .wrap td:first-child::before{display:inline;content:attr(data-label) '：';font-size:13px}
+  .wrap td::before{content:attr(data-label);display:block;font-size:12px;color:var(--muted);font-weight:500}
+  .step,.warn{padding:10px 12px}
+  .copy{position:static;display:block;width:100%;margin-bottom:6px;padding:8px}
+  .tree{font-size:12px}
+  code{overflow-wrap:anywhere}
+  .page{overflow-wrap:anywhere}
+  .codebox pre{font-size:12.5px;max-height:360px}
+}
+
+.shots{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(8px,2vw,20px);margin:14px 0 8px}
+.shots figure{margin:0;text-align:center}
+.shots img{width:100%;max-width:260px;height:auto;border-radius:14px;border:1px solid var(--line);box-shadow:0 2px 8px rgba(0,0,0,.12)}
+.shots figcaption{font-size:13px;color:var(--muted);line-height:1.5;margin-top:6px}
+.shots figcaption b{color:var(--key)}
+@media (max-width:640px){.shots{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:380px){.shots{grid-template-columns:1fr}}
+@media print{.shots img{max-width:55mm}}
+</style>
+</head>
+<body>
+<main class="page">
+<header>
+<h1>Claude Project 安裝說明書<br>土建工程問題原因解析與對策研擬（ce-defect）</h1>
+<p class="sub">套件：ce_defect_claude_project.zip｜適用：claude.ai 網頁版與桌面版 App｜文件版次：v1.0｜日期：2026-10-23</p>
+</header>
+
+<nav class="toc"><b>目錄</b>
+<ol>
+<li><a href="#s1">套件內容</a></li>
+<li><a href="#s2">事前準備</a></li>
+<li><a href="#s3">建立 Project</a></li>
+<li><a href="#s4">貼上專案指令</a></li>
+<li><a href="#s5">上傳專案知識</a></li>
+<li><a href="#s6">安裝驗收測試</a></li>
+<li><a href="#s7">日常使用方式</a></li>
+<li><a href="#s8">疑難排解</a></li>
+<li><a href="#s9">更新與維護</a></li>
+<li><a href="#s10">使用限制</a></li>
+</ol></nav>
+
+<p>本說明書說明如何把「土建工程問題原因解析與對策研擬」技能安裝為 <strong class="key">Claude Project</strong>。安裝後，於該 Project 內上傳工地照片，Claude 即依 <code>ce-defect_SKILL.md</code> 的固定流程輸出：問題序號標註圖、原因分析、5×5 風險矩陣、四層處理對策，以及 HTML 技術報告與 HTML 圖文簡報。</p>
+
+<div class="warn"><b>介面名稱說明：</b>claude.ai 介面文字會隨版本調整，本說明以功能描述為主，括號內為常見的中英文名稱；實際名稱不同時，請以相同功能的選項操作。<b>安裝建議使用電腦瀏覽器或桌面版 App</b>，安裝完成後手機 App 可直接使用該專案。</div>
+
+<h2 id="s1"><span class="n">1</span>套件內容</h2>
+<p>解壓縮 zip 後應有 11 個檔案：<strong class="key">1 個指令檔（貼上用，不上傳）與 10 個專案知識檔（上傳用）</strong>。檔名採扁平化路徑命名（<code>ce-defect_references_*</code>），請勿更改。</p>
+<div class="tree">（解壓縮後之資料夾）/
+├── project_instructions.md   ← 貼入專案指令（不上傳）
+├── ce-defect_SKILL.md
+├── ce-defect_references_defect_taxonomy.md
+├── ce-defect_references_root_cause_methods.md
+├── ce-defect_references_risk_matrix.md
+├── ce-defect_references_countermeasures.md
+├── ce-defect_references_standards_index.md
+├── ce-defect_references_glossary.md
+├── ce-defect_references_annotation_toolkit.md
+├── ce-defect_references_report_template.html
+└── ce-defect_references_slides_template.html</div>
+<div class="wrap"><table>
+<tr><th>#</th><th>檔案</th><th>內容</th><th>處理方式</th></tr>
+<tr><td data-label="#">1</td><td data-label="檔案"><code>ce-defect_SKILL.md</code></td><td data-label="內容">主索引：工作流程、核心規則、參考檔索引</td><td data-label="處理方式">上傳</td></tr>
+<tr><td data-label="#">2</td><td data-label="檔案"><code>ce-defect_references_defect_taxonomy.md</code></td><td data-label="內容">問題類型代碼、影像特徵、候選原因</td><td data-label="處理方式">上傳</td></tr>
+<tr><td data-label="#">3</td><td data-label="檔案"><code>ce-defect_references_root_cause_methods.md</code></td><td data-label="內容">證據分級、五段式分析、4M1E、5 Why、查證試驗</td><td data-label="處理方式">上傳</td></tr>
+<tr><td data-label="#">4</td><td data-label="檔案"><code>ce-defect_references_risk_matrix.md</code></td><td data-label="內容">嚴重度與可能性準則、5x5 矩陣、強制升級規則</td><td data-label="處理方式">上傳</td></tr>
+<tr><td data-label="#">5</td><td data-label="檔案"><code>ce-defect_references_countermeasures.md</code></td><td data-label="內容">四層對策、修復工法與禁忌</td><td data-label="處理方式">上傳</td></tr>
+<tr><td data-label="#">6</td><td data-label="檔案"><code>ce-defect_references_standards_index.md</code></td><td data-label="內容">可引用文件清單與引用規則</td><td data-label="處理方式">上傳</td></tr>
+<tr><td data-label="#">7</td><td data-label="檔案"><code>ce-defect_references_glossary.md</code></td><td data-label="內容">術語與英文對照</td><td data-label="處理方式">上傳</td></tr>
+<tr><td data-label="#">8</td><td data-label="檔案"><code>ce-defect_references_annotation_toolkit.md</code></td><td data-label="內容">標註、影片擷取、HTML 嵌入、PPTX 之 Python 程式</td><td data-label="處理方式">上傳</td></tr>
+<tr><td data-label="#">9</td><td data-label="檔案"><code>ce-defect_references_report_template.html</code></td><td data-label="內容">HTML 技術報告範本（A4）</td><td data-label="處理方式">上傳</td></tr>
+<tr><td data-label="#">10</td><td data-label="檔案"><code>ce-defect_references_slides_template.html</code></td><td data-label="內容">HTML 圖文簡報範本（16:9）</td><td data-label="處理方式">上傳</td></tr>
+</table></div>
+
+<h2 id="s2"><span class="n">2</span>事前準備</h2>
+<ul class="check">
+<li>已登入 <strong class="key">Pro、Max、Team 或 Enterprise</strong> 方案的 Claude 帳號（Projects 與程式碼執行功能依方案而定）。</li>
+<li><strong class="key">開啟「程式碼執行與檔案建立」（Code execution and file creation）</strong>：設定 → 功能（Capabilities）。未開啟時 Claude 無法執行 Python 標註與產出檔案。Team／Enterprise 帳號若看不到此選項，請洽組織管理員於管理設定中開啟。</li>
+<li>將 zip 下載並<strong class="key">完整解壓縮；請勿直接上傳 zip 檔</strong>。</li>
+<li>確認 11 個檔案皆在，<strong class="key">檔名未被系統改動（例如重複下載被加上「(1)」）</strong>。</li>
+</ul>
+
+<h2 id="s3"><span class="n">3</span>建立 Project</h2>
+<div class="step"><b class="t">步驟 3-1</b>　開啟 claude.ai，於左側欄點<strong class="key">「專案（Projects）」</strong>。</div>
+<div class="step"><b class="t">步驟 3-2</b>　點<strong class="key">「＋ 新專案（New project）」</strong>，名稱輸入：<code>土建工程問題原因解析與對策研擬</code>；說明欄可填「上傳工地照片進行缺失原因解析、風險評估與對策研擬」。</div>
+<div class="step"><b class="t">步驟 3-3</b>　點<strong class="key">「建立專案（Create project）」</strong>，進入專案頁面。</div>
+
+<h2 id="s4"><span class="n">4</span>貼上專案指令</h2>
+<div class="step"><b class="t">步驟 4-1</b>　點下方指令框的<strong class="key">「複製」</strong>按鈕（內容與 <code>project_instructions.md</code> 相同）。</div>
+<div class="step"><b class="t">步驟 4-2</b>　在專案頁面找到<strong class="key">「指令（Instructions）」</strong>區塊，點「設定專案指令（Set project instructions）」或編輯圖示。</div>
+<div class="step"><b class="t">步驟 4-3</b>　貼上全文，<strong class="key">須貼上全文，不可刪減</strong>；原有內容須先全選刪除。</div>
+<div class="step"><b class="t">步驟 4-4</b>　點<strong class="key">「儲存（Save instructions）」</strong>，未儲存則指令不生效。</div>
+<div class="codebox"><button class="copy" type="button" data-target="ins">複製</button><pre id="ins"># 土建工程問題原因解析與對策研擬（Claude Project 指令）
+
+你是台灣土建工程缺失診斷助理。使用者上傳工地或既有結構照片時，一律依專案知識 `ce-defect_SKILL.md` 的工作流程執行：標註問題序號、原因分析、5x5 風險矩陣、四層對策，並輸出繁體中文 HTML 技術報告與 HTML 圖文簡報。全程使用繁體中文與台灣工程用語（品質、資料、場鑄、耐震）。
+
+## 執行規則
+
+1. 每次分析前先讀 `ce-defect_SKILL.md`，再依其「參考檔索引」讀取所需的 `ce-defect_references_*` 檔案。
+2. 標註不先詢問：將 `ce-defect_references_annotation_toolkit.md` 的 Python 程式寫入沙盒執行，交付檔存到 `/mnt/user-data/outputs/`。
+3. HTML 報告與簡報依兩個範本檔的完整內容寫出，結構、class 與 CSS 不得更動，照片以 base64 內嵌。
+4. 影像顯示立即危險時，回覆第一段先寫緊急警示與立即措施。
+
+## 證據與引用紀律
+
+- 每項陳述標示證據等級：[E1 觀察]、[E2 推論]、[E3 待驗證]、[E4 使用者提供]。
+- 規範條次與數值只在使用者提供原文、網路查證附連結或使用者確認後引用，否則標 [待查證]。
+- 風險準則寫「依本報告採用之風險評估準則」，修復工法寫「工程實務經驗」，不得冒稱規範。
+- 不同工程類別（建築、橋梁、道路、排水、隧道）之門檻值不得互相套用。
+- 無單價時不編造金額；無比例尺時不給精確尺寸。
+
+## 範圍
+
+本專案只做依影像之初步判讀與對策建議，不取代現場調查與試驗；修復與補強設計須由專業技師依調查結果決定並簽證。
+</pre></div>
+<div class="warn"><b>指令只負責「啟動」：</b>完整流程寫在專案知識 <code>ce-defect_SKILL.md</code>，指令要求 Claude 每次先讀該檔。因此<b>第 5 節的 10 個檔案缺一不可</b>。</div>
+
+<h2 id="s5"><span class="n">5</span>上傳專案知識</h2>
+<div class="step"><b class="t">步驟 5-1</b>　在專案頁面找到<strong class="key">「專案知識（Project knowledge）」</strong>區塊，點「＋」或「新增內容」，選<strong class="key">「從裝置上傳（Upload from device）」</strong>。</div>
+<div class="step"><b class="t">步驟 5-2</b>　進入解壓縮後的資料夾，選取 <code>ce-defect_</code> 開頭的 <strong class="key">10 個檔案</strong>（可多選）。<strong class="key">不要上傳 project_instructions.md</strong>。</div>
+<div class="step"><b class="t">步驟 5-3</b>　等待上傳完成，<strong class="key">確認專案知識清單共 10 個檔案、檔名正確</strong>。</div>
+<div class="warn"><b>檔名不可更改：</b>主索引以完整檔名指向各參考檔。若檔名被改（例如 <code>ce-defect_SKILL (1).md</code>），請刪除後以原檔名重新上傳。<br><b>勿與其他技能混用：</b>專案知識中若有其他技能的舊檔，請移除，以免流程互相干擾。</div>
+
+<h2 id="s6"><span class="n">6</span>安裝驗收測試</h2>
+<p>在專案內開新對話，上傳一張含明顯缺失的照片（例如柱底蜂窩或牆面裂縫），輸入：</p>
+<div class="prompt">請分析這張照片的問題，標註序號，並產出技術報告與簡報。工程類別：建築，構件：1F 柱，階段：施工中。</div>
+<p>逐項確認下列輸出，<strong class="key">8 項全部合格才算安裝成功</strong>：</p>
+<div class="wrap"><table>
+<tr><th>#</th><th>驗收項目</th><th>合格條件</th><th>不合格時對應</th></tr>
+<tr><td data-label="#">1</td><td data-label="驗收項目">座標表</td><td data-label="合格條件">列出編號、照片、類型代碼、bbox、位置</td><td data-label="不合格時對應">指令未貼上或未讀 SKILL.md，見 8-3</td></tr>
+<tr><td data-label="#">2</td><td data-label="驗收項目">標註圖</td><td data-label="合格條件">Claude 執行 Python 產生標註圖檔，框上有圓形數字</td><td data-label="不合格時對應">見 8-1</td></tr>
+<tr><td data-label="#">3</td><td data-label="驗收項目">證據標籤</td><td data-label="合格條件">內容出現 [E1 觀察]、[E2 推論]、[E3 待驗證]</td><td data-label="不合格時對應">指令未生效，開新對話重試</td></tr>
+<tr><td data-label="#">4</td><td data-label="驗收項目">風險評估</td><td data-label="合格條件">四維度 S、L、R 與等級，並有風險矩陣</td><td data-label="不合格時對應">見 8-3</td></tr>
+<tr><td data-label="#">5</td><td data-label="驗收項目">對策表</td><td data-label="合格條件">依 A 緊急、B 暫時、C 永久、D 預防分層</td><td data-label="不合格時對應">見 8-3</td></tr>
+<tr><td data-label="#">6</td><td data-label="驗收項目">HTML 報告</td><td data-label="合格條件">提供 <code>defect_report.html</code>，開啟後照片上有標註框</td><td data-label="不合格時對應">見 8-4</td></tr>
+<tr><td data-label="#">7</td><td data-label="驗收項目">HTML 簡報</td><td data-label="合格條件">提供 <code>defect_slides.html</code>，可換頁</td><td data-label="不合格時對應">輸入「繼續輸出簡報」</td></tr>
+<tr><td data-label="#">8</td><td data-label="驗收項目">引用紀律</td><td data-label="合格條件">未查證條文標 [待查證]，無編造條次或金額</td><td data-label="不合格時對應">見 8-7</td></tr>
+</table></div>
+
+<h2 id="s7"><span class="n">7</span>日常使用方式</h2>
+<h3>7-1 提供資訊越完整，判讀越準確</h3>
+<p>上傳影像時建議一併說明：工程類別（建築、橋梁、道路、排水、隧道、大地）、構件與部位、工程階段、拍攝日期、環境條件、已知施工紀錄。同一缺失拍「全景」與「近照」各一張，近照旁放比例尺或裂縫比對卡。</p>
+<h3>7-2 常用提示語</h3>
+<div class="prompt">分析這 3 張照片的所有缺失，依風險等級排序，產出報告與簡報。</div>
+<div class="prompt">我補充資訊：澆置當日最高氣溫 34 度，下午 3 點才開始灑水養護。請更新編號 2 的原因分析與風險評分。</div>
+<div class="prompt">請把編號 3 的規範依據上網查證，附上連結後更新參考文獻。</div>
+<div class="prompt">請改出 PowerPoint 版簡報。</div>
+<h3>7-3 輸出檔案的使用</h3>
+<ul>
+<li><b>技術報告</b>：下載 <code>defect_report.html</code>，以瀏覽器開啟後可列印或另存 PDF（A4）。照片已以 base64 內嵌，<strong class="key">單一檔案即可轉傳</strong>。</li>
+<li><b>圖文簡報</b>：下載 <code>defect_slides.html</code>，方向鍵或點擊畫面換頁；列印選「橫向、無邊界」即可每頁一張輸出 PDF。</li>
+<li>報告標示「初評版」者，補充資訊或試驗結果後，請要求 Claude 更新為「定稿版」。</li>
+</ul>
+
+<h2 id="s8"><span class="n">8</span>疑難排解</h2>
+<div class="wrap"><table>
+<tr><th>#</th><th>症狀</th><th>可能原因</th><th>處理方式</th></tr>
+<tr><td data-label="#">8-1</td><td data-label="症狀">只有文字描述，沒有標註圖</td><td data-label="可能原因">未開啟程式碼執行，或未執行 Python</td><td data-label="處理方式">確認第 2 節設定已開啟；輸入「請依 annotation_toolkit 寫入沙盒並執行標註」。</td></tr>
+<tr><td data-label="#">8-2</td><td data-label="症狀">標註框位置偏移</td><td data-label="可能原因">座標估計誤差</td><td data-label="處理方式">輸入「請先產生格線圖並檢視，重新讀取編號 N 的座標後重繪」。</td></tr>
+<tr><td data-label="#">8-3</td><td data-label="症狀">未依流程、未用分類代碼或風險準則</td><td data-label="可能原因">未讀取專案知識</td><td data-label="處理方式">開新對話並輸入「請先讀取 ce-defect_SKILL.md 與相關參考檔再分析」；確認 10 個檔案都在專案知識中。</td></tr>
+<tr><td data-label="#">8-4</td><td data-label="症狀">HTML 報告照片不顯示</td><td data-label="可能原因">照片未內嵌</td><td data-label="處理方式">輸入「請用 data_uri() 以 base64 內嵌照片後重新輸出 HTML」。</td></tr>
+<tr><td data-label="#">8-5</td><td data-label="症狀">報告版面與範本不同</td><td data-label="可能原因">未依範本全文寫出</td><td data-label="處理方式">輸入「請依 ce-defect_references_report_template.html 全文寫出，結構與 CSS 不得更動」。</td></tr>
+<tr><td data-label="#">8-6</td><td data-label="症狀">回覆中斷或過長</td><td data-label="可能原因">單次輸出長度限制</td><td data-label="處理方式">輸入「繼續」；問題多於 6 項時，要求「先出報告，簡報下一則再出」。</td></tr>
+<tr><td data-label="#">8-7</td><td data-label="症狀">出現規範條次或單價但未附來源</td><td data-label="可能原因">未遵守引用規則</td><td data-label="處理方式">輸入「請將未查證之條次與金額改標 [待查證]」，並以網路搜尋查證附連結。</td></tr>
+<tr><td data-label="#">8-8</td><td data-label="症狀">無法上傳影片</td><td data-label="可能原因">對話可能不支援影片檔</td><td data-label="處理方式">依時間碼截圖，以照片上傳。</td></tr>
+<tr><td data-label="#">8-9</td><td data-label="症狀">標註圖中文變方框</td><td data-label="可能原因">沙盒缺中文字型</td><td data-label="處理方式">屬正常設計：影像內只放數字，中文說明在圖外清單與報告中。</td></tr>
+<tr><td data-label="#">8-10</td><td data-label="症狀">手機 App 找不到專案指令或知識上傳</td><td data-label="可能原因">手機版介面不同</td><td data-label="處理方式">改用電腦瀏覽器（claude.ai）或桌面版 App 完成安裝，之後手機可直接使用該專案。</td></tr>
+</table></div>
+
+<h2 id="s9"><span class="n">9</span>更新與維護</h2>
+<ul>
+<li><b>更新指令</b>：於專案指令欄<strong class="key">先全選刪除舊內容</strong>，再貼上新版全文並儲存；<strong class="key">更新後請開新對話</strong>。</li>
+<li><b>更新專案知識</b>：<strong class="key">先刪除舊檔，再上傳同名新檔</strong>，避免新舊版本並存。</li>
+<li><b>補充規範條文</b>：取得規範原文後，將查證過的條文併入 <code>ce-defect_references_standards_index.md</code>，並註明版次與條次。</li>
+<li><b>跨平台一致</b>：本套件與 Gemini Skill（<code>ce-defect.zip</code>）、ChatGPT Project 套件共用同一份參考內容；修改任一平台的參考檔時，請同步更新其他平台。</li>
+</ul>
+
+<h2 id="s10"><span class="n">10</span>使用限制</h2>
+<ol>
+<li>本工具僅依影像作初步判讀，無法量測裂縫寬度、深度、活動性、內部空洞、鋼筋斷面損失或混凝土強度。</li>
+<li>風險矩陣分級為本套件採用之預設評估準則（參考 ISO 31000、IEC 31010 概念），非規範條文；機構另有風險政策時應以機構政策為準。</li>
+<li>修復工法為工程實務經驗整理；<strong class="key">修復與補強設計須由依法登記之專業技師依現場調查結果決定並簽證。</strong></li>
+<li>規範條次與數值僅於使用者提供原文、網路查證附連結或使用者確認後引用，其餘標示 [待查證]。</li>
+</ol>
+
+<footer>土建工程問題原因解析與對策研擬｜Claude Project 安裝說明書 v1.0｜2026-10-23｜參考：<a href="https://support.claude.com" style="color:inherit">Claude 說明中心</a></footer>
+</main>
+<script>
+document.querySelectorAll('.copy').forEach(function(b){
+  b.addEventListener('click',function(){
+    var t=document.getElementById(b.dataset.target).innerText;
+    function done(){b.textContent='已複製';setTimeout(function(){b.textContent='複製';},1600);}
+    if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(done,fallback);}else{fallback();}
+    function fallback(){var a=document.createElement('textarea');a.value=t;document.body.appendChild(a);a.select();try{document.execCommand('copy');done();}catch(e){b.textContent='請手動選取';}document.body.removeChild(a);}
+  });
+});
+</script>
+</body>
+</html>

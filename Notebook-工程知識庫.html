@@ -1,0 +1,737 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>應用Gemini Notebook建立工程知識庫</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: dark engineering header band, sticky PART index on the left, article column on the right; each PART closes with one infographic card */
+:root{
+  --ink:#1C2331; --ink-soft:#3D4D5C;
+  --eng-blue:#2C5F8A; --eng-blue-l:#4A85B5;
+  --accent:#D4450C; --accent-l:#F26030;
+  --bg:#F5F6F8; --bg-white:#FFFFFF; --bg-card:#EEF1F5;
+  --rule:#D0D6DE; --grid-line:rgba(44,95,138,0.07);
+  --code-bg:#1C2331; --code-fg:#E6EDF5;
+  --info-bg:#EAF1F8; --warn-bg:#FCEFE8;
+  --f-head:"IBM Plex Sans","Noto Sans TC",system-ui,sans-serif;
+  --f-body:"Noto Sans TC","IBM Plex Sans",system-ui,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ink:#E3E8EF; --ink-soft:#A9B6C4;
+    --eng-blue:#5B92C2; --eng-blue-l:#7FAED6;
+    --accent:#F0703A; --accent-l:#FF8A55;
+    --bg:#11171F; --bg-white:#19212C; --bg-card:#212B38;
+    --rule:#334152; --grid-line:rgba(127,174,214,0.08);
+    --code-bg:#0B1016; --code-fg:#E6EDF5;
+    --info-bg:#1A2836; --warn-bg:#2E1E17;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --ink:#E3E8EF; --ink-soft:#A9B6C4;
+  --eng-blue:#5B92C2; --eng-blue-l:#7FAED6;
+  --accent:#F0703A; --accent-l:#FF8A55;
+  --bg:#11171F; --bg-white:#19212C; --bg-card:#212B38;
+  --rule:#334152; --grid-line:rgba(127,174,214,0.08);
+  --code-bg:#0B1016; --code-fg:#E6EDF5;
+  --info-bg:#1A2836; --warn-bg:#2E1E17;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16.5px;line-height:1.85;
+  background-image:linear-gradient(var(--grid-line) 1px,transparent 1px),linear-gradient(90deg,var(--grid-line) 1px,transparent 1px);
+  background-size:32px 32px;}
+a{color:var(--eng-blue)}
+a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* header */
+header.hero{background:linear-gradient(135deg,#0D1820 0%,#1C2331 50%,#1A3550 100%);color:#F2F5F9;position:relative;overflow:hidden}
+header.hero::before{content:"";position:absolute;inset:0;
+  background-image:linear-gradient(rgba(74,133,181,.15) 1px,transparent 1px),linear-gradient(90deg,rgba(74,133,181,.15) 1px,transparent 1px);
+  background-size:40px 40px;pointer-events:none}
+header.hero::after{content:"";position:absolute;left:0;right:0;bottom:0;height:4px;background:linear-gradient(90deg,#D4450C,#F26030 35%,#4A85B5 70%,#2C5F8A)}
+.hero-inner{position:relative;max-width:1180px;margin:0 auto;padding-block:56px 48px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.eyebrow{font-family:var(--f-head);font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:#F26030;font-weight:600}
+.hero h1{font-family:var(--f-head);font-weight:700;font-size:clamp(28px,5vw,46px);line-height:1.25;margin:.35em 0 .25em;text-wrap:balance}
+.dek{font-size:clamp(17px,2.4vw,21px);color:#C9D6E3;margin:0 0 22px;text-wrap:balance}
+.meta{display:flex;flex-wrap:wrap;gap:8px 10px;font-family:var(--f-head);font-size:13px}
+.meta span{border:1px solid rgba(201,214,227,.35);border-radius:3px;padding:2px 9px;color:#DCE5EE}
+.meta span.info{border-color:rgba(242,96,48,.6);color:#FFC7AE}
+
+/* page */
+.page-wrapper{max-width:1180px;margin:0 auto;display:grid;grid-template-columns:220px minmax(0,1fr);gap:44px;
+  padding-block:40px 64px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.side-nav{position:sticky;top:calc(env(safe-area-inset-top,0px) + 24px);align-self:start;font-family:var(--f-head);font-size:14px}
+.side-nav .nav-title{font-size:12px;letter-spacing:.12em;color:var(--ink-soft);text-transform:uppercase;margin-bottom:10px}
+.side-nav ol{list-style:none;margin:0;padding:0;border-left:2px solid var(--rule)}
+.side-nav li a{display:block;padding:7px 0 7px 14px;margin-left:-2px;border-left:2px solid transparent;color:var(--ink-soft);text-decoration:none;line-height:1.45}
+.side-nav li a b{display:block;font-size:11.5px;letter-spacing:.1em;color:var(--eng-blue-l)}
+.side-nav li a:hover{color:var(--eng-blue);border-left-color:var(--eng-blue-l)}
+.article-body{min-width:0;max-width:820px}
+
+.abstract{background:var(--bg-white);border-left:4px solid var(--accent);padding:22px 26px;margin-bottom:22px;box-shadow:0 1px 2px rgba(0,0,0,.04)}
+.abstract p{margin:0 0 .9em}.abstract p:last-child{margin:0}
+.note-source{background:var(--bg-card);border-left:4px solid var(--eng-blue);padding:14px 20px;font-size:14.5px;color:var(--ink-soft);margin-bottom:44px;line-height:1.75}
+.note-source strong{color:var(--ink)}
+
+.section{margin-bottom:64px;scroll-margin-top:24px}
+.section-number{font-family:var(--f-head);font-weight:600;font-size:13px;letter-spacing:.16em;color:var(--eng-blue-l)}
+.section h2{font-family:var(--f-head);font-size:clamp(22px,3.2vw,29px);line-height:1.35;margin:.2em 0 .6em;color:var(--eng-blue);text-wrap:balance}
+.lead{font-size:18px;font-weight:500;color:var(--ink);margin:0 0 1.2em}
+.sub{font-family:var(--f-head);font-weight:600;font-size:17px;color:var(--ink);margin:1.6em 0 .5em;display:flex;align-items:center;gap:8px}
+.sub::before{content:"○";color:var(--accent);font-weight:700}
+.section p{margin:0 0 1em}
+.analysis{list-style:none;margin:0;padding:0;display:grid;gap:12px}
+.analysis li{background:var(--bg-white);border:1px solid var(--rule);padding:12px 16px;border-radius:4px}
+.analysis li strong:first-child{color:var(--eng-blue)}
+
+.formula{background:var(--code-bg);color:var(--code-fg);font-family:var(--f-mono);font-size:15px;line-height:1.9;padding:16px 20px;border-radius:4px;overflow-x:auto;white-space:pre}
+.formula .c{color:#8FA3B8}
+.formula .k{color:#FFB08A}
+.legend-line{font-size:14.5px;color:var(--ink-soft);margin-top:8px}
+
+.law-cite{color:var(--eng-blue);font-weight:700}
+.accent-bold{color:var(--accent);font-weight:700}
+
+.callout{display:flex;gap:12px;background:var(--warn-bg);border:1px solid var(--accent);border-left-width:4px;padding:14px 18px;border-radius:4px;margin:18px 0;font-size:15.5px}
+.callout.info{background:var(--info-bg);border-color:var(--eng-blue)}
+.callout .ic{font-family:var(--f-head);font-weight:700;color:var(--accent);flex:none}
+.callout.info .ic{color:var(--eng-blue)}
+.callout div{min-width:0}
+
+.table-wrap{overflow-x:auto;margin:16px 0;border:1px solid var(--rule);border-radius:4px;background:var(--bg-white)}
+table{border-collapse:collapse;width:100%;min-width:560px;font-size:15px}
+th{background:var(--eng-blue);color:#fff;font-family:var(--f-head);font-weight:600;text-align:left;padding:10px 14px}
+td{padding:10px 14px;border-top:1px solid var(--rule);vertical-align:top}
+tbody tr:nth-child(even) td{background:var(--bg-card)}
+td.chk{width:36px;text-align:center;color:var(--accent);font-weight:700}
+
+.figure-card{background:var(--bg-white);border:1px solid var(--rule);border-top:4px solid var(--eng-blue);margin:28px 0 0;border-radius:4px;overflow:hidden}
+.fig-scroll{overflow-x:auto;padding:18px}
+.fig-scroll svg{display:block;width:100%;min-width:600px;height:auto}
+.figure-card figcaption{background:var(--bg-card);padding:10px 18px;font-family:var(--f-head);font-size:14.5px;color:var(--ink-soft);border-top:1px solid var(--rule)}
+.figure-card figcaption b{color:var(--ink);margin-right:.6em}
+
+/* SVG semantics via tokens */
+.s-card{fill:var(--bg-white);stroke:var(--rule);stroke-width:1.5}
+.s-panel{fill:var(--bg-card);stroke:var(--rule);stroke-width:1.2}
+.s-blue{fill:var(--eng-blue)}
+.s-blue-l{fill:var(--eng-blue-l)}
+.s-acc{fill:var(--accent)}
+.s-line{stroke:var(--ink-soft);stroke-width:2;fill:none}
+.s-line-b{stroke:var(--eng-blue);stroke-width:2.5;fill:none}
+.s-line-a{stroke:var(--accent);stroke-width:2.5;fill:none}
+.s-dash{stroke:var(--ink-soft);stroke-width:1.5;stroke-dasharray:5 4}
+.t{font-family:var(--f-body);fill:var(--ink);font-size:16px}
+.t-s{font-family:var(--f-body);fill:var(--ink-soft);font-size:14px}
+.t-h{font-family:var(--f-head);fill:var(--ink);font-size:18px;font-weight:700}
+.t-b{font-family:var(--f-head);fill:var(--eng-blue);font-weight:700;font-size:17px}
+.t-a{font-family:var(--f-head);fill:var(--accent);font-weight:700;font-size:17px}
+.t-w{font-family:var(--f-body);fill:#FFFFFF;font-size:16px;font-weight:500}
+.t-wh{font-family:var(--f-head);fill:#FFFFFF;font-size:17px;font-weight:700}
+.t-m{font-family:var(--f-mono);fill:var(--code-fg);font-size:16px}
+.t-mk{font-family:var(--f-mono);fill:#FFB08A;font-size:16px}
+.s-code{fill:var(--code-bg)}
+.s-concl{fill:var(--accent)}
+.s-sidebox{fill:var(--bg-white);stroke:#999999;stroke-width:1.5;stroke-dasharray:6 4}
+
+.conclusion-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:22px}
+.conclusion-card{background:var(--bg-white);border:1px solid var(--rule);border-top:3px solid var(--accent);padding:16px 18px;border-radius:4px}
+.conclusion-card h3{font-family:var(--f-head);font-size:16.5px;margin:0 0 6px;color:var(--ink)}
+.conclusion-card p{margin:0;font-size:15px;color:var(--ink-soft);line-height:1.7}
+
+.outro{background:var(--bg-white);border:1px solid var(--rule);padding:20px 24px;border-radius:4px}
+.outro h3{font-family:var(--f-head);font-size:16px;color:var(--eng-blue);margin:0 0 8px}
+.outro ul{margin:0;padding-left:1.2em;font-size:14.5px;line-height:1.9}
+
+footer{background:#0D1820;color:#B9C6D3;text-align:center;font-family:var(--f-head);font-size:14px;line-height:1.9;
+  padding-block:30px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));border-top:3px solid #D4450C}
+footer strong{color:#FFFFFF}
+
+@media (max-width:900px){
+  .page-wrapper{grid-template-columns:minmax(0,1fr);padding-block:28px 48px}
+  .side-nav{display:none}
+  .conclusion-grid{grid-template-columns:minmax(0,1fr)}
+  .hero-inner{padding-block:40px 36px}
+  body{background-size:22px 22px;font-size:16px}
+}
+@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
+html{scroll-behavior:smooth}
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <marker id="arB" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--eng-blue)"/></marker>
+    <marker id="arG" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--ink-soft)"/></marker>
+    <marker id="arA" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--accent)"/></marker>
+    <marker id="arY" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#E8A23C"/></marker>
+  </defs>
+</svg>
+
+<header class="hero">
+  <div class="hero-inner">
+    <div class="eyebrow">AI × 土建工程師實務　｜　工程知識管理</div>
+    <h1>應用Gemini Notebook建立工程知識庫</h1>
+    <p class="dek">把規範丟給 AI，就是知識庫了嗎？</p>
+    <div class="meta">
+      <span class="info">資訊查核至 2026.10</span><span class="info">閱讀約 15 分鐘</span>
+    </div>
+  </div>
+</header>
+
+<div class="page-wrapper">
+  <nav class="side-nav" aria-label="文章目錄">
+    <div class="nav-title">目錄</div>
+    <ol>
+      <li><a href="#part01"><b>PART 01</b>為什麼需要有出處的知識庫</a></li>
+      <li><a href="#part02"><b>PART 02</b>Gemini Notebook</a></li>
+      <li><a href="#part03"><b>PART 03</b>Gemini App 的 Notebooks</a></li>
+      <li><a href="#part04"><b>PART 04</b>建庫實作</a></li>
+      <li><a href="#part05"><b>PART 05</b>風險管理</a></li>
+      <li><a href="#part06"><b>PART 06</b>總結</a></li>
+    </ol>
+  </nav>
+
+  <main class="article-body">
+
+    <div class="abstract">
+      <p>很多工程師第一次用 AI 查規範，都有類似的經驗：問「柱箍筋間距上限怎麼規定」，AI 答得條理分明、語氣篤定，最後還補上一句「依規範規定」。等到真的要寫進計算書、或回覆審查意見時，才發現找不到它引的是哪一版、哪一條，有些數字甚至跟桌上的規範對不起來。</p>
+      <p>直覺上，這像是 AI「不夠聰明」。但問題其實出在作答方式：通用聊天機器人多半靠訓練時記住的內容在「閉卷作答」，它記得的版本、記得的條文，未必是事務所正在用的那一版。</p>
+      <p>2026 年 Google 先在 Gemini App 裡加入 Notebooks，接著把 NotebookLM 更名為 <strong>Gemini Notebook</strong>，兩邊雙向同步。名稱一多、入口一多，反而更容易用錯地方。這篇文章分六個 PART，把「有出處的工程知識庫」從原理、工具分工、建庫流程到風險管理一次梳理清楚 👇</p>
+    </div>
+
+    <div class="note-source">
+      <strong>名稱說明：</strong>本文的「Gemini Notebook」，指 Google 於 <span class="accent-bold">2026 年 7 月 16 日</span>由 NotebookLM 更名而來的獨立研究工具，網址改為 notebook.google.com，舊網址會自動轉址；「Gemini App 的 Notebooks」，則是 Gemini 聊天 App 側欄中於 <span class="accent-bold">2026 年 4 月 8 日</span>推出的筆記本區塊。兩者是同一組筆記本的兩個入口。功能與方案額度會隨 Google 調整，請以官方說明為準。
+    </div>
+
+    <!-- PART 01 -->
+    <section class="section" id="part01">
+      <div class="section-number">PART 01</div>
+      <h2>為什麼工程師需要「有出處」的知識庫</h2>
+      <p class="lead">同一個問題，為什麼換個問法，AI 給的答案就不太一樣？</p>
+
+      <div class="sub">定義</div>
+      <p>「有出處的知識庫」是指 AI 回答時，先從工程師自己指定的文件裡找出相關段落，再根據這些段落作答，並把出處標回原文。這種做法常被稱為來源接地（Source Grounding），技術上屬於檢索增強生成（Retrieval-Augmented Generation, RAG）的一種應用。</p>
+
+      <div class="sub">公式</div>
+      <div class="formula"><span class="k">閉卷</span>  A = G(Q | θ)
+<span class="k">開卷</span>  A = G(Q | R(Q, S)) ＋ C</div>
+      <p class="legend-line">其中 Q 為提問，θ 為模型訓練時學到的參數，S 為工程師上傳的來源集合，R 為檢索動作，G 為生成，C 為指回原文的引註。</p>
+
+      <div class="sub">原理解析</div>
+      <ul class="analysis">
+        <li><strong>應用盲點：</strong>閉卷作答時，答案只取決於 Q 與 θ。θ 是模型在某個時間點「讀過的東西」，裡面混著舊版規範、國外規範與網路論壇的說法，模型本身分不出哪一條才是現行有效的。答案聽起來合理，卻沒辦法驗證，這正是 AI 會「一本正經、胡說八道」的根源。</li>
+        <li><strong>解決方法：</strong>把 θ 的角色從「知識來源」降為「語言能力」，知識改由 S 提供。R 先從 S 中挑出與 Q 最相關的片段，G 只負責把這些片段組織成通順的回答。</li>
+        <li><strong>構造公式：</strong>把 R(Q, S) 放進 G 的條件裡，再補上 C，閉卷式就變成開卷式。多出來的 C 是關鍵，它讓每一句回答都能點回原文的哪一頁、哪一段。</li>
+        <li><strong>比喻：</strong>閉卷作答像背了十年考古題的學長，答得快，記憶卻可能停在舊制；開卷作答像把現行規範攤在桌上，每寫一句就翻到對應頁碼。工程師簽證需要的，是後者。</li>
+        <li><strong>向下相容：</strong>當 S 是空集合，R 找不到任何片段，開卷式就退化回閉卷式。這也提醒一件事：知識庫的品質上限，取決於工程師放進去的資料。</li>
+      </ul>
+
+      <figure class="figure-card">
+        <div class="fig-scroll">
+        <svg viewBox="0 0 800 520" role="img" aria-label="閉卷作答與來源接地作答的對照圖">
+          <!-- left panel -->
+          <rect class="s-panel" x="20" y="20" width="360" height="290" rx="6"/>
+          <text class="t-h" x="40" y="52">閉卷作答 Closed-book</text>
+          <rect class="s-card" x="40" y="80" width="120" height="48" rx="6"/>
+          <text class="t" x="100" y="110" text-anchor="middle">提問 Q</text>
+          <rect class="s-card" x="220" y="72" width="140" height="64" rx="32"/>
+          <text class="t" x="290" y="100" text-anchor="middle">模型記憶 θ</text>
+          <text class="t-s" x="290" y="122" text-anchor="middle">版本不明</text>
+          <line class="s-line" x1="162" y1="104" x2="214" y2="104" marker-end="url(#arG)"/>
+          <line class="s-line" x1="290" y1="138" x2="290" y2="186" marker-end="url(#arG)"/>
+          <rect class="s-card" x="60" y="192" width="300" height="96" rx="6"/>
+          <text class="t" x="80" y="224">答案 A：「依規範規定，……」</text>
+          <text class="t-s" x="80" y="250">語氣篤定、條理分明</text>
+          <circle class="s-acc" cx="330" cy="236" r="18"/>
+          <text class="t-wh" x="330" y="242" text-anchor="middle">?</text>
+          <text class="t-a" x="80" y="276" style="font-size:15px">出處：查不到</text>
+
+          <!-- right panel -->
+          <rect class="s-panel" x="420" y="20" width="360" height="290" rx="6"/>
+          <text class="t-h" x="440" y="52">開卷作答 Grounded</text>
+          <rect class="s-card" x="440" y="80" width="100" height="48" rx="6"/>
+          <text class="t" x="490" y="110" text-anchor="middle">提問 Q</text>
+          <rect class="s-card" x="630" y="90" width="110" height="60" rx="3"/>
+          <rect class="s-card" x="622" y="82" width="110" height="60" rx="3"/>
+          <rect class="s-card" x="614" y="74" width="110" height="60" rx="3"/>
+          <text class="t" x="669" y="100" text-anchor="middle">來源 S</text>
+          <text class="t-s" x="669" y="122" text-anchor="middle">規範 PDF</text>
+          <line class="s-line-b" x1="542" y1="104" x2="606" y2="104" marker-end="url(#arB)"/>
+          <text class="t-b" x="574" y="94" text-anchor="middle" style="font-size:14px">R</text>
+          <line class="s-line-b" x1="669" y1="156" x2="669" y2="186" marker-end="url(#arB)"/>
+          <rect class="s-card" x="440" y="192" width="320" height="96" rx="6"/>
+          <text class="t" x="460" y="224">答案 A：依第 X 章第 X 節……</text>
+          <rect class="s-blue" x="460" y="242" width="40" height="26" rx="4"/>
+          <text class="t-w" x="480" y="261" text-anchor="middle" style="font-size:14px">[1]</text>
+          <rect class="s-blue" x="508" y="242" width="40" height="26" rx="4"/>
+          <text class="t-w" x="528" y="261" text-anchor="middle" style="font-size:14px">[2]</text>
+          <text class="t-b" x="560" y="261" style="font-size:15px">引註 C：點回原文頁碼</text>
+
+          <!-- formula box -->
+          <rect class="s-code" x="20" y="330" width="760" height="86" rx="6"/>
+          <text class="t-mk" x="44" y="364">閉卷</text><text class="t-m" x="110" y="364">A = G(Q | θ)</text>
+          <text class="t-mk" x="44" y="398">開卷</text><text class="t-m" x="110" y="398">A = G(Q | R(Q, S)) ＋ C</text>
+          <text class="t-m" x="470" y="381" style="font-size:14px;fill:#8FA3B8">S = ∅ 時 → 退化回閉卷</text>
+
+          <!-- conclusion -->
+          <rect class="s-concl" x="20" y="436" width="760" height="64" rx="6"/>
+          <text class="t-wh" x="400" y="475" text-anchor="middle">Grounding 讓「聽起來對」變成「查得到」</text>
+        </svg>
+        </div>
+        <figcaption><b>圖1</b>閉卷作答與來源接地作答的差異對照：差別在檢索 R 與引註 C</figcaption>
+      </figure>
+    </section>
+
+    <!-- PART 02 -->
+    <section class="section" id="part02">
+      <div class="section-number">PART 02</div>
+      <h2>Gemini Notebook（原 NotebookLM）：以來源為邊界的研究筆記本</h2>
+      <p class="lead">既然要開卷，書要怎麼放進去？</p>
+
+      <div class="sub">定義</div>
+      <p>Gemini Notebook 是 Google 的來源接地研究工具，前身是 NotebookLM。依 Google 官方部落格的更名公告，它仍是同一個獨立產品，只是名稱改掛在 Gemini 品牌之下。每一本「筆記本」就是一個封閉的資料夾，AI 只在這個資料夾的來源範圍內作答。</p>
+
+      <div class="sub">公式</div>
+      <div class="formula">S = {s₁, s₂, …, sₙ}     <span class="c">n ≤ N（依方案而定）</span>
+|sᵢ| ≤ 50 萬字 或 200 MB
+O = Studio(S′)          <span class="c">S′ ⊆ S，勾選的部分來源</span></div>
+      <p class="legend-line">其中 sᵢ 為單一來源，N 為每本筆記本的來源上限，O 為 Studio 面板產出的成果。</p>
+
+      <div class="sub">原理解析</div>
+      <ul class="analysis">
+        <li><strong>應用盲點：</strong>工程資料格式五花八門：規範 PDF、廠商型錄、Google 文件會議紀錄、教學影片、現場錄音。如果每次都要人工整理成同一種格式，建庫成本高到沒人想做。</li>
+        <li><strong>解決方法：</strong>Gemini Notebook 直接接受多種來源。官方說明頁列出 PDF、Google 文件、Google 簡報（每份最多 100 張）、網頁、附字幕的公開 YouTube 影片、音訊檔與圖片等類型。每份來源的上限約 <span class="accent-bold">50 萬字或 200 MB</span>；免費版每本筆記本約可放 <span class="accent-bold">50 個來源</span>，付費方案更高，實際數字以官方頁面為準。</li>
+        <li><strong>構造公式：</strong>左欄放來源 S；中間對話時，可以只勾選其中幾份 S′ 來提問；右欄 Studio 再把 S′ 轉成語音概覽、影片概覽、心智圖、報告、資料表、測驗卡等產出 O。7 月更名時，Google 同步加入在筆記本內執行程式碼做資料分析的能力，先開放給 Ultra 方案，Pro 方案隨後跟進；9 月又推出行動 App 即時語音對話（近 100 種語言）與互動式學習概覽。</li>
+        <li><strong>比喻：</strong>一本筆記本像一間「只放指定書籍的專題閱覽室」。館員（AI）只能從這間的書架拿書回答，拿不到外面的書，也就不容易亂引。</li>
+        <li><strong>容易忽略的細節：</strong>Google 文件來源不會匯入註腳與註解；雲端硬碟裡的文件改版後要重新同步，筆記本讀到的才是新版。規範解說常寫在註腳的，最好轉成 PDF 再上傳。</li>
+        <li><strong>向下相容：</strong>只用對話、不碰 Studio，它就是一個「會附引註的 PDF 問答器」。對多數工程師來說，這已經涵蓋八成的日常用途。</li>
+      </ul>
+
+      <figure class="figure-card">
+        <div class="fig-scroll">
+        <svg viewBox="0 0 800 470" role="img" aria-label="Gemini Notebook 從來源到產出的運作流程">
+          <!-- column heads -->
+          <rect class="s-blue" x="20" y="20" width="220" height="40" rx="4"/><text class="t-wh" x="130" y="46" text-anchor="middle">來源 Sources</text>
+          <rect class="s-blue" x="290" y="20" width="220" height="40" rx="4"/><text class="t-wh" x="400" y="46" text-anchor="middle">對話 Chat</text>
+          <rect class="s-blue" x="560" y="20" width="220" height="40" rx="4"/><text class="t-wh" x="670" y="46" text-anchor="middle">產出 Studio</text>
+          <!-- sources list -->
+          <g>
+            <rect class="s-card" x="20" y="72" width="220" height="36" rx="4"/><text class="t" x="36" y="96">☑ 規範 PDF</text>
+            <rect class="s-card" x="20" y="116" width="220" height="36" rx="4"/><text class="t" x="36" y="140">☑ Google 文件／簡報</text>
+            <rect class="s-card" x="20" y="160" width="220" height="36" rx="4"/><text class="t" x="36" y="184">☐ 網頁</text>
+            <rect class="s-card" x="20" y="204" width="220" height="36" rx="4"/><text class="t" x="36" y="228">☐ YouTube（附字幕）</text>
+            <rect class="s-card" x="20" y="248" width="220" height="36" rx="4"/><text class="t" x="36" y="272">☐ 音訊／圖片</text>
+            <text class="t-s" x="130" y="306" text-anchor="middle">☑ 勾選者即為 S′</text>
+          </g>
+          <!-- chat -->
+          <rect class="s-panel" x="290" y="72" width="220" height="212" rx="6"/>
+          <rect class="s-card" x="340" y="88" width="156" height="52" rx="10"/>
+          <text class="t" x="352" y="111" style="font-size:14.5px">保護層最小厚度</text>
+          <text class="t" x="352" y="131" style="font-size:14.5px">怎麼規定？</text>
+          <rect class="s-card" x="304" y="154" width="190" height="112" rx="10"/>
+          <text class="t" x="316" y="180" style="font-size:14.5px">依來源所載，</text>
+          <text class="t" x="316" y="202" style="font-size:14.5px">依暴露條件區分…</text>
+          <rect class="s-blue" x="316" y="220" width="36" height="24" rx="4"/><text class="t-w" x="334" y="237" text-anchor="middle" style="font-size:13px">[1]</text>
+          <rect class="s-blue" x="358" y="220" width="36" height="24" rx="4"/><text class="t-w" x="376" y="237" text-anchor="middle" style="font-size:13px">[2]</text>
+          <text class="t-s" x="402" y="237" style="font-size:13px">點擊回原文</text>
+          <line class="s-line-b" x1="244" y1="178" x2="284" y2="178" marker-end="url(#arB)"/>
+          <line class="s-line-b" x1="514" y1="178" x2="554" y2="178" marker-end="url(#arB)"/>
+          <!-- studio -->
+          <g>
+            <rect class="s-card" x="560" y="72" width="105" height="64" rx="4"/><text class="t" x="612" y="100" text-anchor="middle" style="font-size:14.5px">語音概覽</text><text class="t-s" x="612" y="120" text-anchor="middle" style="font-size:12px">Audio</text>
+            <rect class="s-card" x="675" y="72" width="105" height="64" rx="4"/><text class="t" x="727" y="100" text-anchor="middle" style="font-size:14.5px">影片概覽</text><text class="t-s" x="727" y="120" text-anchor="middle" style="font-size:12px">Video</text>
+            <rect class="s-card" x="560" y="146" width="105" height="64" rx="4"/><text class="t" x="612" y="174" text-anchor="middle" style="font-size:14.5px">心智圖</text><text class="t-s" x="612" y="194" text-anchor="middle" style="font-size:12px">Mind map</text>
+            <rect class="s-card" x="675" y="146" width="105" height="64" rx="4"/><text class="t" x="727" y="174" text-anchor="middle" style="font-size:14.5px">報告</text><text class="t-s" x="727" y="194" text-anchor="middle" style="font-size:12px">Reports</text>
+            <rect class="s-card" x="560" y="220" width="105" height="64" rx="4"/><text class="t" x="612" y="248" text-anchor="middle" style="font-size:14.5px">資料表</text><text class="t-s" x="612" y="268" text-anchor="middle" style="font-size:12px">Data table</text>
+            <rect class="s-card" x="675" y="220" width="105" height="64" rx="4"/><text class="t" x="727" y="248" text-anchor="middle" style="font-size:14.5px">測驗卡</text><text class="t-s" x="727" y="268" text-anchor="middle" style="font-size:12px">Quiz</text>
+          </g>
+          <!-- formula strip -->
+          <rect class="s-code" x="20" y="326" width="760" height="56" rx="6"/>
+          <text class="t-m" x="40" y="360">|sᵢ| ≤ 50 萬字 或 200 MB</text>
+          <text class="t-m" x="420" y="360">O = Studio(S′),  S′ ⊆ S</text>
+          <!-- conclusion -->
+          <rect class="s-concl" x="20" y="398" width="760" height="56" rx="6"/>
+          <text class="t-wh" x="400" y="432" text-anchor="middle">One notebook = one closed reading room：只在書架內作答</text>
+        </svg>
+        </div>
+        <figcaption><b>圖2</b>Gemini Notebook 由來源、引註對話到 Studio 產出的三欄運作流程</figcaption>
+      </figure>
+    </section>
+
+    <!-- PART 03 -->
+    <section class="section" id="part03">
+      <div class="section-number">PART 03</div>
+      <h2>Gemini App 的 Notebooks：同一本筆記本，兩個入口</h2>
+      <p class="lead">既然已經有 Gemini Notebook，為什麼 Gemini App 裡又冒出一個 Notebooks？</p>
+
+      <div class="sub">定義</div>
+      <p>Gemini App 的 Notebooks，是 Gemini 聊天 App 側欄中的筆記本區塊，可以把相關對話歸檔、加入檔案、設定自訂指示。依 Google 官方部落格說明，它與 Gemini Notebook <span class="accent-bold">雙向同步</span>：在任一邊加入的來源，另一邊都會自動出現。推出時先開放給 Google AI Plus、Pro、Ultra 訂閱者在網頁版使用。</p>
+
+      <div class="sub">公式</div>
+      <div class="formula"><span class="k">共用知識庫</span>       K = S
+<span class="k">Gemini Notebook</span>  A = G(Q | R(Q, S)) ＋ C
+<span class="k">Gemini App</span>       A = G(Q | R(Q, S), W, H, I)</div>
+      <p class="legend-line">其中 W 為網路搜尋，H 為對話紀錄，I 為自訂指示；其餘符號同 PART 01。</p>
+
+      <div class="sub">原理解析</div>
+      <ul class="analysis">
+        <li><strong>應用盲點：</strong>Gemini Notebook 的嚴格邊界是優點，也是限制。來源裡沒寫的事它不答，單次對話也只看得到一本筆記本；可是工程實務常要把規範條文、最新產業消息、廠商資料和自己的推理串在一起。</li>
+        <li><strong>解決方法：</strong>Gemini App 入口在 R(Q, S) 之外，多加了 W、H、I 三個條件。官方說明筆記本內的回答會結合這些來源與 Gemini 的工具及網路搜尋；在一般對話中，也能從輸入框的「＋」把 Gemini Notebook 的筆記本附加為來源，再接續 Canvas、Deep Research 等功能，甚至一次附加多本筆記本做跨主題整理。</li>
+        <li><strong>構造公式：</strong>兩條式子共用同一個 S，差別只在條件項的多寡。條件越少，答案越「窄而可查」；條件越多，答案越「廣而需查」。</li>
+        <li><strong>比喻：</strong>Gemini Notebook 像審查委員，只看送審資料說話；Gemini App 像資深顧問，看完資料還會補充業界經驗與最新消息。兩種角色都需要，但不能把顧問的補充當成送審資料本身的內容。</li>
+        <li><strong>向下相容：</strong>Gemini App 入口若只問來源裡的事、不需要上網，回答行為會趨近 Gemini Notebook；反過來，Gemini Notebook 不會自己上網補資料，這條界線是固定的。</li>
+      </ul>
+
+      <div class="callout info">
+        <span class="ic">分工</span>
+        <div>要「逐條查證、回覆審查意見」用 Gemini Notebook；要「延伸推理、起草文字」用 Gemini App 的 Notebooks。起草完成後，再回到 Gemini Notebook 對照原文，一來一回，兩邊的長處都用到了。</div>
+      </div>
+
+      <figure class="figure-card">
+        <div class="fig-scroll">
+        <svg viewBox="0 0 800 540" role="img" aria-label="Gemini App 與 Gemini Notebook 共用來源的雙入口分工">
+          <!-- left -->
+          <rect class="s-panel" x="20" y="20" width="270" height="230" rx="6"/>
+          <text class="t-h" x="40" y="52">Gemini App Notebooks</text>
+          <text class="t-s" x="40" y="74">推理延伸・起草</text>
+          <rect class="s-card" x="40" y="88" width="230" height="32" rx="4"/><text class="t" x="54" y="110" style="font-size:15px">對話歸檔 H</text>
+          <rect class="s-card" x="40" y="126" width="230" height="32" rx="4"/><text class="t" x="54" y="148" style="font-size:15px">自訂指示 I</text>
+          <rect class="s-card" x="40" y="164" width="230" height="32" rx="4"/><text class="t" x="54" y="186" style="font-size:15px">網路搜尋 W</text>
+          <rect class="s-card" x="40" y="202" width="230" height="32" rx="4"/><text class="t" x="54" y="224" style="font-size:15px">Canvas／Deep Research</text>
+          <!-- right -->
+          <rect class="s-panel" x="510" y="20" width="270" height="230" rx="6"/>
+          <text class="t-h" x="530" y="52">Gemini Notebook</text>
+          <text class="t-s" x="530" y="74">逐條查證・產出</text>
+          <rect class="s-card" x="530" y="88" width="230" height="32" rx="4"/><text class="t" x="544" y="110" style="font-size:15px">僅在來源內作答</text>
+          <rect class="s-card" x="530" y="126" width="230" height="32" rx="4"/><text class="t" x="544" y="148" style="font-size:15px">逐句引註 C</text>
+          <rect class="s-card" x="530" y="164" width="230" height="32" rx="4"/><text class="t" x="544" y="186" style="font-size:15px">Studio 產出 O</text>
+          <rect class="s-card" x="530" y="202" width="230" height="32" rx="4"/><text class="t" x="544" y="224" style="font-size:15px">程式碼執行（依方案）</text>
+          <!-- center cylinder -->
+          <path class="s-blue" d="M330 80 a70 18 0 0 1 140 0 v110 a70 18 0 0 1 -140 0 z"/>
+          <ellipse cx="400" cy="80" rx="70" ry="18" class="s-blue-l"/>
+          <text class="t-wh" x="400" y="140" text-anchor="middle">共用來源</text>
+          <text class="t-wh" x="400" y="164" text-anchor="middle">K = S</text>
+          <line class="s-line-a" x1="296" y1="135" x2="324" y2="135" marker-start="url(#arA)" marker-end="url(#arA)"/>
+          <line class="s-line-a" x1="476" y1="135" x2="504" y2="135" marker-start="url(#arA)" marker-end="url(#arA)"/>
+          <text class="t-a" x="400" y="236" text-anchor="middle" style="font-size:15px">雙向同步 Sync</text>
+          <!-- formula -->
+          <rect class="s-code" x="20" y="268" width="760" height="70" rx="6"/>
+          <text class="t-m" x="40" y="296" style="font-size:15px">App：     A = G(Q | R(Q,S), W, H, I)</text>
+          <text class="t-m" x="40" y="324" style="font-size:15px">Notebook：A = G(Q | R(Q,S)) ＋ C</text>
+          <!-- sub panels -->
+          <rect class="s-card" x="20" y="354" width="370" height="90" rx="6"/>
+          <text class="t-b" x="40" y="384">條件多 → 廣而需查</text>
+          <text class="t" x="40" y="410" style="font-size:15px">適合：起草說明、整理會議、</text>
+          <text class="t" x="40" y="432" style="font-size:15px">補充最新產業資訊</text>
+          <rect class="s-card" x="410" y="354" width="370" height="90" rx="6"/>
+          <text class="t-b" x="430" y="384">條件少 → 窄而可查</text>
+          <text class="t" x="430" y="410" style="font-size:15px">適合：查規範條文、回覆審查、</text>
+          <text class="t" x="430" y="432" style="font-size:15px">核對數字與適用條件</text>
+          <!-- conclusion -->
+          <rect class="s-concl" x="20" y="460" width="760" height="62" rx="6"/>
+          <text class="t-wh" x="400" y="497" text-anchor="middle">Same sources, two doors：先在 App 推理，再回 Notebook 查證</text>
+        </svg>
+        </div>
+        <figcaption><b>圖3</b>Gemini App 與 Gemini Notebook 共用同一組來源的雙入口分工對照</figcaption>
+      </figure>
+    </section>
+
+    <!-- PART 04 -->
+    <section class="section" id="part04">
+      <div class="section-number">PART 04</div>
+      <h2>建庫實作：分庫策略與來源整理</h2>
+      <p class="lead">把手邊所有 PDF 一口氣全丟進同一本筆記本，會發生什麼事？</p>
+
+      <div class="sub">定義</div>
+      <p>建庫不只是「上傳檔案」，而是決定哪些資料放同一本、怎麼命名、怎麼更新的資料治理工作。Gemini Notebook 的基本單位是筆記本，所以分庫策略，說穿了就是筆記本的切法。</p>
+
+      <div class="sub">公式</div>
+      <div class="formula">回答品質 ≈ 來源品質 × F
+F = 與提問相關的來源數 ÷ 筆記本內來源總數     <span class="c">F：聚焦度</span></div>
+
+      <div class="sub">原理解析</div>
+      <ul class="analysis">
+        <li><strong>應用盲點：</strong>一本筆記本若同時塞進耐震規範、混凝土規範、三個案子的會議紀錄和五家廠商型錄，問「保護層厚度」時，R 可能抓到廠商型錄的建議值，而不是規範值。F 太低，雜訊就會壓過訊號。</li>
+        <li><strong>解決方法：</strong>依「用途」而不是「檔案類型」分庫。建議至少分成三類：<span class="accent-bold">規範庫</span>（只放現行版規範與解說）、<span class="accent-bold">案例庫</span>（一個工程一本，放圖說摘要、會議紀錄、審查意見）、<span class="accent-bold">品管試驗庫</span>（試驗方法、CNS 標準、歷年試驗報告摘要）。</li>
+        <li><strong>構造公式：</strong>每本筆記本先寫一段範圍說明，例如「本筆記本僅收錄現行版耐震規範，回答須附章節條號，來源沒有的內容請直接說明查無」。這等於把 F 的定義直接寫給 AI 看，讓 R 與 G 都在同一個範圍內運作。</li>
+        <li><strong>前處理三件事：</strong>掃描檔先做光學字元辨識（Optical Character Recognition, OCR），否則 AI 讀到的只是圖片；大型規範依章拆檔，引註才會精準到章；檔名統一為「類別_名稱_版本_日期」，版本一律照官方最新公告填寫，不憑印象。</li>
+        <li><strong>比喻：</strong>好的分庫像工地材料堆置區，鋼筋、模板、混凝土試體分區放、掛上標示牌，取料時才不會拿錯號數。</li>
+        <li><strong>向下相容：</strong>專案小、資料少的時候，一本筆記本也能用得很好。分庫是資料量變大之後的升級，不必一開始就切得很細，等 F 開始下降再拆也不遲。</li>
+      </ul>
+
+      <figure class="figure-card">
+        <div class="fig-scroll">
+        <svg viewBox="0 0 800 1060" role="img" aria-label="工程知識庫建庫流程與各階段檢核重點">
+          <!-- title -->
+          <text x="400" y="48" text-anchor="middle" style="font-family:var(--f-head);font-weight:700;font-size:28px;fill:#C0431B">工程知識庫建庫流程＆檢核重點</text>
+          <line x1="150" y1="80" x2="220" y2="80" stroke="#C0431B" stroke-width="2"/><rect x="214" y="76" width="8" height="8" fill="#C0431B"/>
+          <line x1="580" y1="80" x2="650" y2="80" stroke="#C0431B" stroke-width="2"/><rect x="578" y="76" width="8" height="8" fill="#C0431B"/>
+          <text class="t-s" x="400" y="85" text-anchor="middle" style="font-size:15px">從資料盤點到定期更新的八個步驟</text>
+
+          <!-- steps: x 60-360, h 64, pitch 114, start 116 -->
+          <g font-family="Noto Sans TC, sans-serif">
+            <rect x="60" y="116" width="300" height="64" rx="12" fill="#9C8563"/>
+            <text class="t-wh" x="210" y="142" text-anchor="middle">① 資料盤點</text><text class="t-w" x="210" y="166" text-anchor="middle" style="font-size:14px">列出規範、案例、試驗資料</text>
+            <rect x="60" y="230" width="300" height="64" rx="12" fill="#9C8563"/>
+            <text class="t-wh" x="210" y="256" text-anchor="middle">② 保密分級</text><text class="t-w" x="210" y="280" text-anchor="middle" style="font-size:14px">公開／內部／機密</text>
+            <rect x="60" y="344" width="300" height="64" rx="12" fill="#9C8563"/>
+            <text class="t-wh" x="210" y="370" text-anchor="middle">③ 分庫規劃</text><text class="t-w" x="210" y="394" text-anchor="middle" style="font-size:14px">規範庫／案例庫／品管試驗庫</text>
+            <rect x="60" y="458" width="300" height="64" rx="12" fill="#6F93AC"/>
+            <text class="t-wh" x="210" y="484" text-anchor="middle">④ OCR 與拆檔</text><text class="t-w" x="210" y="508" text-anchor="middle" style="font-size:14px">掃描檔辨識、依章拆分</text>
+            <rect x="60" y="572" width="300" height="64" rx="12" fill="#6F93AC"/>
+            <text class="t-wh" x="210" y="598" text-anchor="middle">⑤ 命名與版本標註</text><text class="t-w" x="210" y="622" text-anchor="middle" style="font-size:14px">類別_名稱_版本_日期</text>
+            <rect x="60" y="686" width="300" height="64" rx="12" fill="#6F93AC"/>
+            <text class="t-wh" x="210" y="712" text-anchor="middle">⑥ 上傳與範圍說明</text><text class="t-w" x="210" y="736" text-anchor="middle" style="font-size:14px">建立筆記本、寫明作答範圍</text>
+            <rect x="60" y="800" width="300" height="64" rx="12" fill="#5E958C"/>
+            <text class="t-wh" x="210" y="826" text-anchor="middle">⑦ 試問驗證</text><text class="t-w" x="210" y="850" text-anchor="middle" style="font-size:14px">以已知答案的題目回測</text>
+            <rect x="60" y="914" width="300" height="64" rx="12" fill="#5E958C"/>
+            <text class="t-wh" x="210" y="940" text-anchor="middle">⑧ 定期更新</text><text class="t-w" x="210" y="964" text-anchor="middle" style="font-size:14px">規範修正、雲端文件重新同步</text>
+          </g>
+          <!-- arrows -->
+          <g stroke="#E8A23C" stroke-width="7" marker-end="url(#arY)">
+            <line x1="210" y1="184" x2="210" y2="218"/>
+            <line x1="210" y1="298" x2="210" y2="332"/>
+            <line x1="210" y1="412" x2="210" y2="446"/>
+            <line x1="210" y1="526" x2="210" y2="560"/>
+            <line x1="210" y1="640" x2="210" y2="674"/>
+            <line x1="210" y1="754" x2="210" y2="788"/>
+            <line x1="210" y1="868" x2="210" y2="902"/>
+          </g>
+
+          <!-- side notes -->
+          <g>
+            <!-- step2 center 262 -->
+            <line x1="360" y1="262" x2="420" y2="262" stroke="#8A8A8A" stroke-width="1.5"/>
+            <rect class="s-sidebox" x="420" y="210" width="350" height="104"/>
+            <text class="t-h" x="436" y="236" style="font-size:15.5px">保密判斷</text>
+            <text class="t" x="436" y="262" style="font-size:14.5px">◎ 契約保密條款是否允許</text>
+            <text class="t" x="436" y="284" style="font-size:14.5px">◎ 是否含個人資料</text>
+            <text class="t" x="436" y="306" style="font-size:14.5px">● 機密資料不上傳</text>
+            <!-- step4 center 490 -->
+            <line x1="360" y1="490" x2="420" y2="490" stroke="#8A8A8A" stroke-width="1.5"/>
+            <rect class="s-sidebox" x="420" y="448" width="350" height="84"/>
+            <text class="t-h" x="436" y="474" style="font-size:15.5px">前處理</text>
+            <text class="t" x="436" y="498" style="font-size:14.5px">◎ 掃描檔先 OCR</text>
+            <text class="t" x="436" y="520" style="font-size:14.5px">◎ 大型規範依章拆檔</text>
+            <!-- step5 center 604 -->
+            <line x1="360" y1="604" x2="420" y2="604" stroke="#8A8A8A" stroke-width="1.5"/>
+            <rect class="s-sidebox" x="420" y="562" width="350" height="84"/>
+            <text class="t-h" x="436" y="588" style="font-size:15.5px">命名規則</text>
+            <text class="t" x="436" y="612" style="font-size:14.5px">◎ 版本依官方最新公告填寫</text>
+            <text class="t" x="436" y="634" style="font-size:14.5px">◎● 新舊版規範不混放</text>
+            <!-- step7 center 832 -->
+            <line x1="360" y1="832" x2="420" y2="832" stroke="#8A8A8A" stroke-width="1.5"/>
+            <rect class="s-sidebox" x="420" y="780" width="350" height="104"/>
+            <text class="t-h" x="436" y="806" style="font-size:15.5px">驗證重點</text>
+            <text class="t" x="436" y="832" style="font-size:14.5px">◎ 以熟悉條文試問</text>
+            <text class="t" x="436" y="854" style="font-size:14.5px">◎ 點開引註核對原文</text>
+            <text class="t" x="436" y="876" style="font-size:14.5px">● 數字、單位逐一比對</text>
+            <!-- step8 center 946 -->
+            <line x1="360" y1="946" x2="420" y2="946" stroke="#8A8A8A" stroke-width="1.5"/>
+            <rect class="s-sidebox" x="420" y="900" width="350" height="92"/>
+            <text class="t-h" x="436" y="926" style="font-size:15.5px">維護</text>
+            <text class="t" x="436" y="950" style="font-size:14.5px">◎ 官方公告修正即更新</text>
+            <text class="t" x="436" y="974" style="font-size:14.5px">◎ 舊版移至「歷史版」筆記本</text>
+          </g>
+          <!-- legend -->
+          <g>
+            <rect x="60" y="1016" width="18" height="18" rx="3" fill="#9C8563"/><text class="t-s" x="86" y="1031">盤點規劃</text>
+            <rect x="200" y="1016" width="18" height="18" rx="3" fill="#6F93AC"/><text class="t-s" x="226" y="1031">前處理與上傳</text>
+            <rect x="370" y="1016" width="18" height="18" rx="3" fill="#5E958C"/><text class="t-s" x="396" y="1031">驗證維護</text>
+            <text class="t-s" x="540" y="1031">◎ 一般檢核　● 強制項目</text>
+          </g>
+        </svg>
+        </div>
+        <figcaption><b>圖4</b>工程知識庫八步驟建庫流程與保密、前處理、命名、驗證、維護檢核重點</figcaption>
+      </figure>
+    </section>
+
+    <!-- PART 05 -->
+    <section class="section" id="part05">
+      <div class="section-number">PART 05</div>
+      <h2>風險管理：保密、規範版本與引用查核</h2>
+      <p class="lead">有了引註，就可以直接抄進報告嗎？</p>
+
+      <div class="sub">定義</div>
+      <p>這裡的風險管理指三道關卡：資料能不能上傳（保密）、上傳的是不是對的版本（版本）、引註指到的原文是否真的支持結論（查核）。三道關卡是串聯的，少一道都不行。</p>
+
+      <div class="sub">公式</div>
+      <div class="formula">可用 = 保密合規 ∧ 版本正確 ∧ 引註回查通過
+<span class="c">任一項為「否」→ 結果即為「不可用」</span></div>
+
+      <div class="sub">原理解析</div>
+      <ul class="analysis">
+        <li><strong>應用盲點：</strong>知識庫越好用，越容易順手把業主圖說、試驗原始數據、投標資料一併丟進去；而引註看起來很像證據，又讓人不自覺放鬆查核。</li>
+        <li><strong>保密關卡：</strong>帳號類型決定隱私條件。Google 表示 Gemini Notebook 不會用個人資料，包括上傳的來源、提問與回答來訓練模型。但在 Gemini App 的 Notebooks 裡對話時，對話紀錄依「Gemini 應用程式活動」設定保存，可能經人工審查以改善產品；加入筆記本的檔案則不直接用於訓練。Workspace 企業或學校帳號另依企業資料條款處理，保護程度較高。</li>
+        <li><strong>版本關卡：</strong>規範庫一次只放一個版本。以 <span class="law-cite">《建築物耐震設計規範及解說》（內政部國土管理署）</span>為例，若有修正公告，舊版另建「歷史版」筆記本，不要新舊混放。版本與年份請以主管機關最新公告為準，自行查核後再標註。</li>
+        <li><strong>查核關卡：</strong>引註只代表「AI 認為相關的段落」，不保證原文支持它的結論。Google 自己也提醒，影片概覽、簡報等產出可能含有事實錯誤。引用到計算書或報告前，點開引註讀原文，數字、單位、適用條件逐一核對。</li>
+        <li><strong>比喻：</strong>三道關卡像預拌混凝土進場：出廠證明對得上（保密合規）、送貨單配比符合設計強度（版本正確）、現場坍度與試體取樣合格（引註回查），少一項就不能澆置。</li>
+        <li><strong>向下相容：</strong>個人學習、只放公開規範時，保密關卡自然通過，但版本與查核兩關照樣不能省。</li>
+      </ul>
+
+      <div class="callout">
+        <span class="ic">注意</span>
+        <div>受契約保密條款約束、含個人資料或屬機關機密的文件，上傳前先依公司資安規定與契約內容判斷，<span class="accent-bold">不確定就不上傳</span>。同時確認登入的是個人帳號還是公司 Workspace 帳號，兩者的資料處理條件不同。</div>
+      </div>
+
+      <figure class="figure-card">
+        <div class="fig-scroll">
+        <svg viewBox="0 0 800 480" role="img" aria-label="工程知識庫三道把關機制">
+          <!-- gates -->
+          <g>
+            <rect class="s-card" x="30" y="30" width="220" height="230" rx="6"/>
+            <circle class="s-blue" cx="70" cy="70" r="20"/><text class="t-wh" x="70" y="76" text-anchor="middle">1</text>
+            <text class="t-h" x="100" y="68">保密合規</text><text class="t-s" x="100" y="88" style="font-size:12.5px">Confidentiality</text>
+            <text class="t" x="50" y="130" style="font-size:15px">□ 契約條款允許</text>
+            <text class="t" x="50" y="160" style="font-size:15px">□ 不含個人資料</text>
+            <text class="t" x="50" y="190" style="font-size:15px">□ 帳號類型已確認</text>
+            <text class="t-b" x="140" y="240" text-anchor="middle" style="font-size:15px">可以上傳嗎？</text>
+
+            <rect class="s-card" x="290" y="30" width="220" height="230" rx="6"/>
+            <circle class="s-blue" cx="330" cy="70" r="20"/><text class="t-wh" x="330" y="76" text-anchor="middle">2</text>
+            <text class="t-h" x="360" y="68">版本正確</text><text class="t-s" x="360" y="88" style="font-size:12.5px">Version</text>
+            <text class="t" x="310" y="130" style="font-size:15px">□ 依最新公告</text>
+            <text class="t" x="310" y="160" style="font-size:15px">□ 新舊版分庫</text>
+            <text class="t" x="310" y="190" style="font-size:15px">□ 檔名含版本日期</text>
+            <text class="t-b" x="400" y="240" text-anchor="middle" style="font-size:15px">是對的那一版嗎？</text>
+
+            <rect class="s-card" x="550" y="30" width="220" height="230" rx="6"/>
+            <circle class="s-blue" cx="590" cy="70" r="20"/><text class="t-wh" x="590" y="76" text-anchor="middle">3</text>
+            <text class="t-h" x="620" y="68">引註回查</text><text class="t-s" x="620" y="88" style="font-size:12.5px">Verification</text>
+            <text class="t" x="570" y="130" style="font-size:15px">□ 點開原文段落</text>
+            <text class="t" x="570" y="160" style="font-size:15px">□ 數字單位一致</text>
+            <text class="t" x="570" y="190" style="font-size:15px">□ 適用條件相符</text>
+            <text class="t-b" x="660" y="240" text-anchor="middle" style="font-size:15px">原文真的這樣寫？</text>
+          </g>
+          <line class="s-line-b" x1="252" y1="145" x2="284" y2="145" marker-end="url(#arB)"/>
+          <line class="s-line-b" x1="512" y1="145" x2="544" y2="145" marker-end="url(#arB)"/>
+          <!-- formula -->
+          <rect class="s-code" x="30" y="284" width="740" height="76" rx="6"/>
+          <text class="t-m" x="400" y="316" text-anchor="middle">可用 = 保密合規 ∧ 版本正確 ∧ 引註回查通過</text>
+          <text class="t-m" x="400" y="344" text-anchor="middle" style="font-size:14px;fill:#8FA3B8">任一項為否 → 不可用</text>
+          <!-- conclusion -->
+          <rect class="s-concl" x="30" y="384" width="740" height="70" rx="6"/>
+          <text class="t-wh" x="400" y="416" text-anchor="middle">Citation ≠ Endorsement</text>
+          <text class="t-w" x="400" y="440" text-anchor="middle" style="font-size:15px">引註是查證的線索，不是正確性的背書</text>
+        </svg>
+        </div>
+        <figcaption><b>圖5</b>工程知識庫保密、版本、引註回查三道串聯把關機制與判定邏輯</figcaption>
+      </figure>
+    </section>
+
+    <!-- PART 06 -->
+    <section class="section" id="part06">
+      <div class="section-number">PART 06</div>
+      <h2>總結：選用框架與建庫檢查清單</h2>
+      <p class="lead">讀完前五個 PART，明天上班要從哪裡開始？</p>
+
+      <div class="sub">定義</div>
+      <p>整篇文章可以收斂成三個要素：<span class="accent-bold">來源要對</span>（分庫、版本、前處理）、<span class="accent-bold">入口要對</span>（查證用 Gemini Notebook，推理起草用 Gemini App）、<span class="accent-bold">查核要做</span>（引註回到原文）。下面兩張表，一張回答「什麼情境用哪個入口」，一張是建庫完成前的自我檢查。</p>
+
+      <div class="sub">選用框架表</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>工作情境</th><th>建議入口</th><th>理由</th></tr></thead>
+          <tbody>
+            <tr><td>查規範條文、回覆審查意見</td><td>Gemini Notebook</td><td>只在來源內作答、逐句附引註</td></tr>
+            <tr><td>起草技術說明、整理會議重點</td><td>Gemini App 的 Notebooks</td><td>可結合對話紀錄與自訂指示</td></tr>
+            <tr><td>需要最新產業動態或市場資訊</td><td>Gemini App（使用網路搜尋）</td><td>來源外的資訊需網路補充，事後仍要回查</td></tr>
+            <tr><td>新進同仁教育訓練、規範導讀</td><td>Gemini Notebook 的 Studio</td><td>語音概覽、心智圖、測驗卡</td></tr>
+            <tr><td>試驗數據彙整分析</td><td>Gemini Notebook（程式碼執行，依方案開放）</td><td>在筆記本內直接計算</td></tr>
+            <tr><td>跨多本筆記本綜合比較</td><td>Gemini App 附加多本筆記本</td><td>Gemini Notebook 單次只看得到一本</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="sub">建庫檢查清單</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th style="width:44px">✓</th><th>檢查項目</th><th>對應 PART</th></tr></thead>
+          <tbody>
+            <tr><td class="chk">□</td><td>已依用途分庫（規範庫／案例庫／品管試驗庫）</td><td>PART 04</td></tr>
+            <tr><td class="chk">□</td><td>掃描檔已 OCR，大型規範已依章拆檔</td><td>PART 04</td></tr>
+            <tr><td class="chk">□</td><td>檔名含類別、名稱、版本、日期</td><td>PART 04</td></tr>
+            <tr><td class="chk">□</td><td>每本筆記本都寫有範圍說明與作答要求</td><td>PART 04</td></tr>
+            <tr><td class="chk">□</td><td>新舊版規範未混放，版本已依官方最新公告查核</td><td>PART 05</td></tr>
+            <tr><td class="chk">□</td><td>上傳前已完成保密判斷，並確認帳號類型</td><td>PART 05</td></tr>
+            <tr><td class="chk">□</td><td>雲端文件改版後已重新同步</td><td>PART 02</td></tr>
+            <tr><td class="chk">□</td><td>引用到報告前，已點開引註核對原文</td><td>PART 05</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="conclusion-grid">
+        <div class="conclusion-card"><h3>開卷，不是閉卷</h3><p>知識庫的價值在 R 與 C：答案從指定來源來，也能回到原文查證。</p></div>
+        <div class="conclusion-card"><h3>同一個 S，兩個入口</h3><p>Gemini Notebook 窄而可查，Gemini App 廣而需查，兩者雙向同步、各司其職。</p></div>
+        <div class="conclusion-card"><h3>分庫決定聚焦度</h3><p>依用途切筆記本、寫明範圍，F 越高，回答越少雜訊。</p></div>
+        <div class="conclusion-card"><h3>三關串聯把關</h3><p>保密、版本、回查少一關，結果就是不可用。</p></div>
+      </div>
+
+      <figure class="figure-card">
+        <div class="fig-scroll">
+        <svg viewBox="0 0 800 400" role="img" aria-label="工程知識庫選用框架與三要素總結">
+          <g>
+            <rect class="s-card" x="20" y="20" width="240" height="150" rx="6"/>
+            <rect class="s-blue" x="20" y="20" width="240" height="44" rx="6"/>
+            <text class="t-wh" x="140" y="48" text-anchor="middle">① 來源要對</text>
+            <text class="t" x="40" y="96" style="font-size:15px">分庫・OCR・拆檔</text>
+            <text class="t" x="40" y="124" style="font-size:15px">命名含版本日期</text>
+            <text class="t-s" x="40" y="154">Right sources</text>
+
+            <rect class="s-card" x="280" y="20" width="240" height="150" rx="6"/>
+            <rect class="s-blue" x="280" y="20" width="240" height="44" rx="6"/>
+            <text class="t-wh" x="400" y="48" text-anchor="middle">② 入口要對</text>
+            <text class="t" x="300" y="96" style="font-size:15px">查證 → Gemini Notebook</text>
+            <text class="t" x="300" y="124" style="font-size:15px">起草 → Gemini App</text>
+            <text class="t-s" x="300" y="154">Right door</text>
+
+            <rect class="s-card" x="540" y="20" width="240" height="150" rx="6"/>
+            <rect class="s-blue" x="540" y="20" width="240" height="44" rx="6"/>
+            <text class="t-wh" x="660" y="48" text-anchor="middle">③ 查核要做</text>
+            <text class="t" x="560" y="96" style="font-size:15px">點開引註讀原文</text>
+            <text class="t" x="560" y="124" style="font-size:15px">數字單位逐一比對</text>
+            <text class="t-s" x="560" y="154">Always verify</text>
+          </g>
+          <!-- spectrum -->
+          <text class="t-b" x="20" y="212" style="font-size:15px">窄而可查</text>
+          <text class="t-a" x="780" y="212" text-anchor="end" style="font-size:15px">廣而需查</text>
+          <line class="s-line" x1="110" y1="207" x2="690" y2="207" marker-start="url(#arG)" marker-end="url(#arG)"/>
+          <rect class="s-panel" x="20" y="226" width="370" height="76" rx="6"/>
+          <text class="t" x="40" y="256" style="font-size:15px">Gemini Notebook：條件 = R(Q,S)</text>
+          <text class="t-s" x="40" y="282">規範條文、審查回覆、數據核對</text>
+          <rect class="s-panel" x="410" y="226" width="370" height="76" rx="6"/>
+          <text class="t" x="430" y="256" style="font-size:15px">Gemini App：條件 = R(Q,S), W, H, I</text>
+          <text class="t-s" x="430" y="282">起草、整理、跨庫綜合、最新資訊</text>
+          <rect class="s-concl" x="20" y="322" width="760" height="60" rx="6"/>
+          <text class="t-wh" x="400" y="358" text-anchor="middle">Knowledge base = right sources × right door × verification</text>
+        </svg>
+        </div>
+        <figcaption><b>圖6</b>工程知識庫三要素與 Gemini Notebook、Gemini App 選用光譜總結</figcaption>
+      </figure>
+    </section>
+
+    <div class="outro">
+      <h3>交流與延伸閱讀</h3>
+      <p style="margin:0 0 10px;font-size:15px">各位工程師在建庫時，筆記本怎麼切、範圍說明怎麼寫最有效？歡迎留言分享實務經驗。本文工具資訊參考以下 Google 官方說明：</p>
+      <ul>
+        <li><a href="https://blog.google/innovation-and-ai/products/gemini-notebook/notebooklm-gemini-notebook/" target="_blank" rel="noopener">Google 官方部落格：NotebookLM is now Gemini Notebook（2026.07.16）</a></li>
+        <li><a href="https://blog.google/innovation-and-ai/products/gemini-app/notebooks-gemini-notebooklm/" target="_blank" rel="noopener">Google 官方部落格：Try notebooks in Gemini（2026.04.08）</a></li>
+        <li><a href="https://blog.google/innovation-and-ai/products/gemini-notebook/new-study-tools-september-2026/" target="_blank" rel="noopener">Google 官方部落格：Gemini Notebook 九月新功能（2026.09.15）</a></li>
+        <li><a href="https://support.google.com/gemininotebook/answer/16215270" target="_blank" rel="noopener">Gemini Notebook 說明中心：來源類型與限制</a></li>
+        <li><a href="https://workspaceupdates.googleblog.com/2026/07/notebooklm-now-gemini-notebook.html" target="_blank" rel="noopener">Google Workspace Updates：更名公告</a></li>
+      </ul>
+    </div>
+
+  </main>
+</div>
+
+<footer>
+  <div>作者：<strong>張朝順 PhD/PE</strong></div>
+ 
+</footer>
+
+</body></html>

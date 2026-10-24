@@ -1,0 +1,541 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>應用Gemini Notebook建立讀書學習庫</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: dark engineering header band, sticky PART index on the left, article column on the right; each PART closes with one infographic card */
+:root{
+  --ink:#1C2331; --ink-soft:#3D4D5C;
+  --eng-blue:#2C5F8A; --eng-blue-l:#4A85B5;
+  --accent:#D4450C; --accent-l:#F26030;
+  --bg:#F5F6F8; --bg-white:#FFFFFF; --bg-card:#EEF1F5;
+  --rule:#D0D6DE; --grid-line:rgba(44,95,138,0.07);
+  --code-bg:#1C2331; --code-fg:#E6EDF5;
+  --info-bg:#EAF1F8; --warn-bg:#FCEFE8;
+  --f-head:"IBM Plex Sans","Noto Sans TC",system-ui,sans-serif;
+  --f-body:"Noto Sans TC","IBM Plex Sans",system-ui,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ink:#E3E8EF; --ink-soft:#A9B6C4;
+    --eng-blue:#5B92C2; --eng-blue-l:#7FAED6;
+    --accent:#F0703A; --accent-l:#FF8A55;
+    --bg:#11171F; --bg-white:#19212C; --bg-card:#212B38;
+    --rule:#334152; --grid-line:rgba(127,174,214,0.08);
+    --code-bg:#0B1016; --code-fg:#E6EDF5;
+    --info-bg:#1A2836; --warn-bg:#2E1E17;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --ink:#E3E8EF; --ink-soft:#A9B6C4;
+  --eng-blue:#5B92C2; --eng-blue-l:#7FAED6;
+  --accent:#F0703A; --accent-l:#FF8A55;
+  --bg:#11171F; --bg-white:#19212C; --bg-card:#212B38;
+  --rule:#334152; --grid-line:rgba(127,174,214,0.08);
+  --code-bg:#0B1016; --code-fg:#E6EDF5;
+  --info-bg:#1A2836; --warn-bg:#2E1E17;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16.5px;line-height:1.85;
+  background-image:linear-gradient(var(--grid-line) 1px,transparent 1px),linear-gradient(90deg,var(--grid-line) 1px,transparent 1px);
+  background-size:32px 32px;}
+a{color:var(--eng-blue)}
+a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* header */
+header.hero{background:linear-gradient(135deg,#0D1820 0%,#1C2331 50%,#1A3550 100%);color:#F2F5F9;position:relative;overflow:hidden}
+header.hero::before{content:"";position:absolute;inset:0;
+  background-image:linear-gradient(rgba(74,133,181,.15) 1px,transparent 1px),linear-gradient(90deg,rgba(74,133,181,.15) 1px,transparent 1px);
+  background-size:40px 40px;pointer-events:none}
+header.hero::after{content:"";position:absolute;left:0;right:0;bottom:0;height:4px;background:linear-gradient(90deg,#D4450C,#F26030 35%,#4A85B5 70%,#2C5F8A)}
+.hero-inner{position:relative;max-width:1180px;margin:0 auto;padding-block:56px 48px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.eyebrow{font-family:var(--f-head);font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:#F26030;font-weight:600}
+.hero h1{font-family:var(--f-head);font-weight:700;font-size:clamp(28px,5vw,46px);line-height:1.25;margin:.35em 0 .25em;text-wrap:balance}
+.dek{font-size:clamp(17px,2.4vw,21px);color:#C9D6E3;margin:0 0 22px;text-wrap:balance}
+.meta{display:flex;flex-wrap:wrap;gap:8px 10px;font-family:var(--f-head);font-size:13px}
+.meta span{border:1px solid rgba(201,214,227,.35);border-radius:3px;padding:2px 9px;color:#DCE5EE}
+.meta span.info{border-color:rgba(242,96,48,.6);color:#FFC7AE}
+
+/* page */
+.page-wrapper{max-width:1180px;margin:0 auto;display:grid;grid-template-columns:220px minmax(0,1fr);gap:44px;
+  padding-block:40px 64px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.side-nav{position:sticky;top:calc(env(safe-area-inset-top,0px) + 24px);align-self:start;font-family:var(--f-head);font-size:14px}
+.side-nav .nav-title{font-size:12px;letter-spacing:.12em;color:var(--ink-soft);text-transform:uppercase;margin-bottom:10px}
+.side-nav ol{list-style:none;margin:0;padding:0;border-left:2px solid var(--rule)}
+.side-nav li a{display:block;padding:7px 0 7px 14px;margin-left:-2px;border-left:2px solid transparent;color:var(--ink-soft);text-decoration:none;line-height:1.45}
+.side-nav li a b{display:block;font-size:11.5px;letter-spacing:.1em;color:var(--eng-blue-l)}
+.side-nav li a:hover{color:var(--eng-blue);border-left-color:var(--eng-blue-l)}
+.article-body{min-width:0;max-width:820px}
+
+.abstract{background:var(--bg-white);border-left:4px solid var(--accent);padding:22px 26px;margin-bottom:22px;box-shadow:0 1px 2px rgba(0,0,0,.04)}
+.abstract p{margin:0 0 .9em}.abstract p:last-child{margin:0}
+.note-source{background:var(--bg-card);border-left:4px solid var(--eng-blue);padding:14px 20px;font-size:14.5px;color:var(--ink-soft);margin-bottom:44px;line-height:1.75}
+.note-source strong{color:var(--ink)}
+
+.section{margin-bottom:64px;scroll-margin-top:24px}
+.section-number{font-family:var(--f-head);font-weight:600;font-size:13px;letter-spacing:.16em;color:var(--eng-blue-l)}
+.section h2{font-family:var(--f-head);font-size:clamp(22px,3.2vw,29px);line-height:1.35;margin:.2em 0 .6em;color:var(--eng-blue);text-wrap:balance}
+.lead{font-size:18px;font-weight:500;color:var(--ink);margin:0 0 1.2em}
+.sub{font-family:var(--f-head);font-weight:600;font-size:17px;color:var(--ink);margin:1.6em 0 .5em;display:flex;align-items:center;gap:8px}
+.sub::before{content:"○";color:var(--accent);font-weight:700}
+.section p{margin:0 0 1em}
+.analysis{list-style:none;margin:0;padding:0;display:grid;gap:12px}
+.analysis li{background:var(--bg-white);border:1px solid var(--rule);padding:12px 16px;border-radius:4px}
+.analysis li strong:first-child{color:var(--eng-blue)}
+
+.formula{background:var(--code-bg);color:var(--code-fg);font-family:var(--f-mono);font-size:15px;line-height:1.9;padding:16px 20px;border-radius:4px;overflow-x:auto;white-space:pre}
+.formula .c{color:#8FA3B8}
+.formula .k{color:#FFB08A}
+.legend-line{font-size:14.5px;color:var(--ink-soft);margin-top:8px}
+
+.law-cite{color:var(--eng-blue);font-weight:700}
+.accent-bold{color:var(--accent);font-weight:700}
+
+.callout{display:flex;gap:12px;background:var(--warn-bg);border:1px solid var(--accent);border-left-width:4px;padding:14px 18px;border-radius:4px;margin:18px 0;font-size:15.5px}
+.callout.info{background:var(--info-bg);border-color:var(--eng-blue)}
+.callout .ic{font-family:var(--f-head);font-weight:700;color:var(--accent);flex:none}
+.callout.info .ic{color:var(--eng-blue)}
+.callout div{min-width:0}
+
+.table-wrap{overflow-x:auto;margin:16px 0;border:1px solid var(--rule);border-radius:4px;background:var(--bg-white)}
+table{border-collapse:collapse;width:100%;min-width:560px;font-size:15px}
+th{background:var(--eng-blue);color:#fff;font-family:var(--f-head);font-weight:600;text-align:left;padding:10px 14px}
+td{padding:10px 14px;border-top:1px solid var(--rule);vertical-align:top}
+tbody tr:nth-child(even) td{background:var(--bg-card)}
+td.chk{width:36px;text-align:center;color:var(--accent);font-weight:700}
+
+.figure-card{background:var(--bg-white);border:1px solid var(--rule);border-top:4px solid var(--eng-blue);margin:28px 0 0;border-radius:4px;overflow:hidden}
+.fig-scroll{overflow-x:auto;padding:18px}
+.fig-scroll svg{display:block;width:100%;min-width:600px;height:auto}
+.figure-card figcaption{background:var(--bg-card);padding:10px 18px;font-family:var(--f-head);font-size:14.5px;color:var(--ink-soft);border-top:1px solid var(--rule)}
+.figure-card figcaption b{color:var(--ink);margin-right:.6em}
+
+/* SVG semantics via tokens */
+.s-card{fill:var(--bg-white);stroke:var(--rule);stroke-width:1.5}
+.s-panel{fill:var(--bg-card);stroke:var(--rule);stroke-width:1.2}
+.s-blue{fill:var(--eng-blue)}
+.s-blue-l{fill:var(--eng-blue-l)}
+.s-acc{fill:var(--accent)}
+.s-line{stroke:var(--ink-soft);stroke-width:2;fill:none}
+.s-line-b{stroke:var(--eng-blue);stroke-width:2.5;fill:none}
+.s-line-a{stroke:var(--accent);stroke-width:2.5;fill:none}
+.s-dash{stroke:var(--ink-soft);stroke-width:1.5;stroke-dasharray:5 4}
+.t{font-family:var(--f-body);fill:var(--ink);font-size:16px}
+.t-s{font-family:var(--f-body);fill:var(--ink-soft);font-size:14px}
+.t-h{font-family:var(--f-head);fill:var(--ink);font-size:18px;font-weight:700}
+.t-b{font-family:var(--f-head);fill:var(--eng-blue);font-weight:700;font-size:17px}
+.t-a{font-family:var(--f-head);fill:var(--accent);font-weight:700;font-size:17px}
+.t-w{font-family:var(--f-body);fill:#FFFFFF;font-size:16px;font-weight:500}
+.t-wh{font-family:var(--f-head);fill:#FFFFFF;font-size:17px;font-weight:700}
+.t-m{font-family:var(--f-mono);fill:var(--code-fg);font-size:16px}
+.t-mk{font-family:var(--f-mono);fill:#FFB08A;font-size:16px}
+.s-code{fill:var(--code-bg)}
+.s-concl{fill:var(--accent)}
+.s-sidebox{fill:var(--bg-white);stroke:#999999;stroke-width:1.5;stroke-dasharray:6 4}
+
+.conclusion-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:22px}
+.conclusion-card{background:var(--bg-white);border:1px solid var(--rule);border-top:3px solid var(--accent);padding:16px 18px;border-radius:4px}
+.conclusion-card h3{font-family:var(--f-head);font-size:16.5px;margin:0 0 6px;color:var(--ink)}
+.conclusion-card p{margin:0;font-size:15px;color:var(--ink-soft);line-height:1.7}
+
+.outro{background:var(--bg-white);border:1px solid var(--rule);padding:20px 24px;border-radius:4px}
+.outro h3{font-family:var(--f-head);font-size:16px;color:var(--eng-blue);margin:0 0 8px}
+.outro ul{margin:0;padding-left:1.2em;font-size:14.5px;line-height:1.9}
+
+footer{background:#0D1820;color:#B9C6D3;text-align:center;font-family:var(--f-head);font-size:14px;line-height:1.9;
+  padding-block:30px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));border-top:3px solid #D4450C}
+footer strong{color:#FFFFFF}
+
+@media (max-width:900px){
+  .page-wrapper{grid-template-columns:minmax(0,1fr);padding-block:28px 48px}
+  .side-nav{display:none}
+  .conclusion-grid{grid-template-columns:minmax(0,1fr)}
+  .hero-inner{padding-block:40px 36px}
+  body{background-size:22px 22px;font-size:16px}
+}
+@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
+html{scroll-behavior:smooth}
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <marker id="arB" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--eng-blue)"/></marker>
+    <marker id="arG" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--ink-soft)"/></marker>
+    <marker id="arA" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--accent)"/></marker>
+    <marker id="arY" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#E8A23C"/></marker>
+  </defs>
+</svg>
+
+<header class="hero">
+  <div class="hero-inner">
+    <div class="eyebrow">AI × 土建工程師實務　｜　工程師的學習方法</div>
+    <h1>應用Gemini Notebook建立讀書學習庫</h1>
+    <p class="dek">讀過的書，為什麼三個月後只剩印象？把「讀過」變成「記得住、用得出」的三階段做法</p>
+    <div class="meta">
+      <span class="info">資訊查核至 2026.10</span><span class="info">閱讀約 8 分鐘</span>
+    </div>
+  </div>
+</header>
+
+<div class="page-wrapper">
+  <nav class="side-nav" aria-label="文章目錄">
+    <div class="nav-title">目錄</div>
+    <ol>
+      <li><a href="#part01"><b>PART 01</b>為什麼讀過就忘</a></li>
+      <li><a href="#part02"><b>PART 02</b>建立學習庫</a></li>
+      <li><a href="#part03"><b>PART 03</b>理解階段</a></li>
+      <li><a href="#part04"><b>PART 04</b>複習階段</a></li>
+      <li><a href="#part05"><b>PART 05</b>總結</a></li>
+    </ol>
+  </nav>
+
+  <main class="article-body">
+
+    <div class="abstract">
+      <p>很多工程師讀書的方式差不多：拿螢光筆畫重點，考前再把畫線的地方重讀一遍。讀的當下覺得都懂，可是過了三個月，遇到現場問題或考題換個問法，腦中只剩「好像看過」的模糊印象。</p>
+      <p>問題不在讀得不夠多，而在讀書的方式。重讀會讓內容「看起來很熟」，熟悉感卻不等於記得住。上一篇〈應用Gemini Notebook建立工程知識庫〉談的是讓資料「查得到」，這一篇換個角度，談怎麼用同一套工具，讓讀過的內容「記得住」👇</p>
+    </div>
+
+    <!-- PART 01 -->
+    <section class="section" id="part01">
+      <div class="section-number">PART 01</div>
+      <h2>為什麼讀過就忘：重讀與提取的差別</h2>
+      <p class="lead">同樣花兩個小時，為什麼有人讀一遍就記得，有人讀三遍還是忘？</p>
+
+      <div class="sub">定義</div>
+      <p>「提取練習」是指不看書，主動把學過的內容從腦中想出來，例如自問自答、做題目、把觀念講給別人聽。認知心理學長期的研究發現，比起單純重讀，主動提取更能讓記憶留得久。</p>
+
+      <div class="sub">公式</div>
+      <div class="formula">記憶保留 M ∝ 提取次數 n × 間隔適當性 t
+<span class="c">重讀時 n ≈ 0；這是概念式，不是實測公式</span></div>
+
+      <div class="sub">原理解析</div>
+      <ul class="analysis">
+        <li><strong>學習盲點：</strong>重讀時眼睛看著答案，大腦不需要出力，n 幾乎是零。讀完感覺很順，其實只是「認得」，不是「想得起來」。</li>
+        <li><strong>解決方法：</strong>把讀書時間的一部分，從「看」改成「考自己」。每想起一次，n 就加一，記憶就被加固一次。</li>
+        <li><strong>比喻：</strong>混凝土澆置完不是就結束了，還要持續灑水養護，強度才長得起來。讀書也一樣，讀完只是澆置，之後每一次提取，才是養護。</li>
+        <li><strong>向下相容：</strong>提取練習並不排斥閱讀。第一次學新東西時仍然要讀，只是讀完之後，要接上「考自己」這一步。</li>
+      </ul>
+
+      <figure class="figure-card">
+        <div class="fig-scroll">
+        <svg viewBox="0 0 800 440" role="img" aria-label="重讀與提取練習的記憶保留示意對照">
+          <!-- left -->
+          <rect class="s-panel" x="20" y="20" width="370" height="250" rx="6"/>
+          <text class="t-h" x="40" y="52">只重讀 Rereading</text>
+          <line class="s-line" x1="60" y1="240" x2="370" y2="240"/>
+          <line class="s-line" x1="60" y1="240" x2="60" y2="74"/>
+          <path d="M60 86 C110 170 170 210 360 226" class="s-line-a" />
+          <text class="t-s" x="215" y="262" text-anchor="middle" style="font-size:13px">時間（示意）</text>
+          <text class="t-s" x="70" y="72" style="font-size:13px">記憶保留（示意）</text>
+          <text class="t-a" x="250" y="190" style="font-size:15px">很快只剩印象</text>
+          <!-- right -->
+          <rect class="s-panel" x="410" y="20" width="370" height="250" rx="6"/>
+          <text class="t-h" x="430" y="52">提取練習 Retrieval</text>
+          <line class="s-line" x1="450" y1="240" x2="760" y2="240"/>
+          <line class="s-line" x1="450" y1="240" x2="450" y2="74"/>
+          <path d="M450 86 C470 130 490 150 520 160 L520 92 C550 120 580 135 610 142 L610 96 C650 116 690 126 750 132" class="s-line-b"/>
+          <circle class="s-blue" cx="520" cy="92" r="6"/><circle class="s-blue" cx="610" cy="96" r="6"/>
+          <text class="t-b" x="528" y="86" style="font-size:13px">提取</text>
+          <text class="t-b" x="618" y="90" style="font-size:13px">提取</text>
+          <text class="t-s" x="605" y="262" text-anchor="middle" style="font-size:13px">時間（示意）</text>
+          <text class="t-s" x="460" y="72" style="font-size:13px">記憶保留（示意）</text>
+          <text class="t-b" x="600" y="200" style="font-size:15px">每提取一次就加固</text>
+          <!-- formula -->
+          <rect class="s-code" x="20" y="290" width="760" height="56" rx="6"/>
+          <text class="t-m" x="400" y="324" text-anchor="middle">M ∝ n × t　　（重讀：n ≈ 0）</text>
+          <!-- conclusion -->
+          <rect class="s-concl" x="20" y="362" width="760" height="60" rx="6"/>
+          <text class="t-wh" x="400" y="398" text-anchor="middle">Retrieval, not rereading：讀完要考自己，記憶才會「養護」成形</text>
+        </svg>
+        </div>
+        <figcaption><b>圖1</b>只重讀與提取練習兩種讀書方式的記憶保留趨勢示意對照（曲線為概念示意，非實測數據）</figcaption>
+      </figure>
+    </section>
+
+    <!-- PART 02 -->
+    <section class="section" id="part02">
+      <div class="section-number">PART 02</div>
+      <h2>建立學習庫：一門學科一本筆記本</h2>
+      <p class="lead">教材、講義、上課錄音、手寫筆記散在四個地方，要怎麼放在一起？</p>
+
+      <div class="sub">定義</div>
+      <p>「學習庫」就是一本專門為某一門學科建立的 Gemini Notebook 筆記本。裡面放的是這門學科的所有學習材料，之後的問答、出題、語音複習，都只從這些材料出發。</p>
+
+      <div class="sub">公式</div>
+      <div class="formula">學習庫 L = { 教材, 講義, 錄音, 筆記照片 }
+<span class="c">一科一本：L₁ 結構動力學、L₂ 混凝土材料學 ……</span></div>
+
+      <div class="sub">原理解析</div>
+      <ul class="analysis">
+        <li><strong>學習盲點：</strong>學習材料格式不一，平常分散在電腦、雲端和手機裡。複習時光是找資料就花掉一半時間，最後乾脆不複習。</li>
+        <li><strong>解決方法：</strong>Gemini Notebook 可直接放入 PDF、Google 文件與簡報、網頁、附字幕的公開 YouTube 影片、音訊檔與圖片。手寫筆記拍照上傳即可；9 月更新後，手機版 App 還能直接錄下課程或演講內容。</li>
+        <li><strong>構造公式：</strong>一門學科只建一本，不要把結構動力學和混凝土材料學放在一起。範圍越單純，之後出的題目越貼近這門課，不會混進別科內容。</li>
+        <li><strong>向下相容：</strong>如果只是讀一本書，L 裡只放這一本也完全可以。學習庫可以從小開始，之後再慢慢把講義和筆記加進來。</li>
+      </ul>
+
+      <div class="callout">
+        <span class="ic">提醒</span>
+        <div>購買的電子書、付費講義與期刊論文，通常有授權限制，不一定允許上傳到第三方服務。上傳前請先確認授權條款；<span class="accent-bold">自己的筆記、公開規範與公開課程</span>較無疑慮。</div>
+      </div>
+
+      <figure class="figure-card">
+        <div class="fig-scroll">
+        <svg viewBox="0 0 800 430" role="img" aria-label="一門學科學習庫的來源組成">
+          <!-- center notebook -->
+          <rect class="s-blue" x="300" y="110" width="200" height="110" rx="8"/>
+          <text class="t-wh" x="400" y="152" text-anchor="middle">學習庫 L₁</text>
+          <text class="t-w" x="400" y="178" text-anchor="middle" style="font-size:15px">結構動力學</text>
+          <text class="t-w" x="400" y="202" text-anchor="middle" style="font-size:13px">One subject, one notebook</text>
+          <!-- sources -->
+          <rect class="s-card" x="30" y="30" width="220" height="70" rx="6"/>
+          <text class="t-h" x="140" y="60" text-anchor="middle" style="font-size:16px">教材 PDF</text>
+          <text class="t-s" x="140" y="84" text-anchor="middle" style="font-size:13px">Textbook</text>
+          <rect class="s-card" x="550" y="30" width="220" height="70" rx="6"/>
+          <text class="t-h" x="660" y="60" text-anchor="middle" style="font-size:16px">講義與簡報</text>
+          <text class="t-s" x="660" y="84" text-anchor="middle" style="font-size:13px">Slides</text>
+          <rect class="s-card" x="30" y="230" width="220" height="70" rx="6"/>
+          <text class="t-h" x="140" y="260" text-anchor="middle" style="font-size:16px">課程錄音</text>
+          <text class="t-s" x="140" y="284" text-anchor="middle" style="font-size:13px">Lecture audio</text>
+          <rect class="s-card" x="550" y="230" width="220" height="70" rx="6"/>
+          <text class="t-h" x="660" y="260" text-anchor="middle" style="font-size:16px">手寫筆記照片</text>
+          <text class="t-s" x="660" y="284" text-anchor="middle" style="font-size:13px">Handwritten notes</text>
+          <line class="s-line-b" x1="250" y1="80" x2="296" y2="122" marker-end="url(#arB)"/>
+          <line class="s-line-b" x1="550" y1="80" x2="504" y2="122" marker-end="url(#arB)"/>
+          <line class="s-line-b" x1="250" y1="250" x2="296" y2="208" marker-end="url(#arB)"/>
+          <line class="s-line-b" x1="550" y1="250" x2="504" y2="208" marker-end="url(#arB)"/>
+          <!-- warning tag -->
+          <rect class="s-sidebox" x="290" y="250" width="220" height="50"/>
+          <text class="t-a" x="400" y="281" text-anchor="middle" style="font-size:15px">上傳前確認教材授權</text>
+          <!-- conclusion -->
+          <rect class="s-concl" x="20" y="340" width="760" height="64" rx="6"/>
+          <text class="t-wh" x="400" y="378" text-anchor="middle">範圍越單純，出題越貼近這門課</text>
+        </svg>
+        </div>
+        <figcaption><b>圖2</b>以結構動力學為例，一門學科學習庫的四類來源組成與授權提醒</figcaption>
+      </figure>
+    </section>
+
+    <!-- PART 03 -->
+    <section class="section" id="part03">
+      <div class="section-number">PART 03</div>
+      <h2>理解階段：先搭骨架，再補細節</h2>
+      <p class="lead">一本五百頁的教科書，要從哪裡開始讀？</p>
+
+      <div class="sub">定義</div>
+      <p>理解階段的目標，是先弄清楚整門學科的結構，知道每一章在處理什麼問題、彼此怎麼銜接，再進入細節。這一步做好，後面的複習才有掛勾可以掛。</p>
+
+      <div class="sub">公式</div>
+      <div class="formula">理解 = 骨架（心智圖） ＋ 細節（引註問答） ＋ 複聽（語音概覽）</div>
+
+      <div class="sub">原理解析</div>
+      <ul class="analysis">
+        <li><strong>學習盲點：</strong>從第一頁讀到最後一頁，常常讀到第三章就忘了第一章在講什麼，因為腦中沒有整體架構，新知識沒地方放。</li>
+        <li><strong>解決方法：</strong>先用 Studio 的<span class="accent-bold">心智圖</span>看全書章節關係，像先看結構配置圖再看細部詳圖。接著針對看不懂的地方提問，例如「阻尼比對共振反應的影響是什麼」，答案會附上引註，點一下就回到教材原文。</li>
+        <li><strong>構造公式：</strong>骨架加細節之後，再產生<span class="accent-bold">語音概覽</span>，以對談方式把重點講一遍。通勤開車時聽一次，等於多了一次不看書的複習時間。</li>
+        <li><strong>向下相容：</strong>語音概覽與心智圖都是輔助，不能取代讀原文。Google 也提醒自動產生的內容可能有誤，關鍵公式與數據仍要回教材確認。</li>
+      </ul>
+
+      <figure class="figure-card">
+        <div class="fig-scroll">
+        <svg viewBox="0 0 800 390" role="img" aria-label="理解階段三步驟">
+          <g>
+            <rect class="s-card" x="20" y="30" width="220" height="170" rx="6"/>
+            <rect class="s-blue" x="20" y="30" width="220" height="44" rx="6"/>
+            <text class="t-wh" x="130" y="58" text-anchor="middle">① 心智圖</text>
+            <circle class="s-blue-l" cx="130" cy="130" r="16"/>
+            <line class="s-line" x1="116" y1="122" x2="66" y2="100"/><line class="s-line" x1="144" y1="122" x2="194" y2="100"/>
+            <line class="s-line" x1="116" y1="140" x2="66" y2="164"/><line class="s-line" x1="144" y1="140" x2="194" y2="164"/>
+            <circle class="s-acc" cx="62" cy="98" r="7"/><circle class="s-acc" cx="198" cy="98" r="7"/>
+            <circle class="s-acc" cx="62" cy="166" r="7"/><circle class="s-acc" cx="198" cy="166" r="7"/>
+            <text class="t-s" x="130" y="192" text-anchor="middle" style="font-size:13px">看全書骨架 Structure</text>
+
+            <rect class="s-card" x="290" y="30" width="220" height="170" rx="6"/>
+            <rect class="s-blue" x="290" y="30" width="220" height="44" rx="6"/>
+            <text class="t-wh" x="400" y="58" text-anchor="middle">② 引註問答</text>
+            <rect class="s-panel" x="306" y="88" width="188" height="34" rx="8"/>
+            <text class="t" x="318" y="111" style="font-size:14px">阻尼比的影響是？</text>
+            <rect class="s-panel" x="306" y="130" width="188" height="34" rx="8"/>
+            <text class="t" x="318" y="153" style="font-size:14px">依教材第 X 章…</text>
+            <rect class="s-blue" x="452" y="136" width="34" height="22" rx="4"/><text class="t-w" x="469" y="152" text-anchor="middle" style="font-size:12px">[1]</text>
+            <text class="t-s" x="400" y="192" text-anchor="middle" style="font-size:13px">補細節 Details</text>
+
+            <rect class="s-card" x="560" y="30" width="220" height="170" rx="6"/>
+            <rect class="s-blue" x="560" y="30" width="220" height="44" rx="6"/>
+            <text class="t-wh" x="670" y="58" text-anchor="middle">③ 語音概覽</text>
+            <g class="s-blue-l">
+              <rect x="608" y="122" width="10" height="20" rx="3"/><rect x="624" y="108" width="10" height="48" rx="3"/>
+              <rect x="640" y="96" width="10" height="72" rx="3"/><rect x="656" y="112" width="10" height="40" rx="3"/>
+              <rect x="672" y="100" width="10" height="64" rx="3"/><rect x="688" y="116" width="10" height="32" rx="3"/>
+              <rect x="704" y="124" width="10" height="16" rx="3"/>
+            </g>
+            <text class="t-s" x="670" y="192" text-anchor="middle" style="font-size:13px">通勤複聽 Listen</text>
+          </g>
+          <line class="s-line-b" x1="244" y1="115" x2="284" y2="115" marker-end="url(#arB)"/>
+          <line class="s-line-b" x1="514" y1="115" x2="554" y2="115" marker-end="url(#arB)"/>
+          <rect class="s-code" x="20" y="222" width="760" height="56" rx="6"/>
+          <text class="t-m" x="400" y="256" text-anchor="middle" style="font-size:15px">理解 = 骨架 ＋ 細節 ＋ 複聽</text>
+          <rect class="s-concl" x="20" y="296" width="760" height="70" rx="6"/>
+          <text class="t-wh" x="400" y="327" text-anchor="middle">Frame first, details second</text>
+          <text class="t-w" x="400" y="352" text-anchor="middle" style="font-size:15px">先看配置圖，再看詳圖</text>
+        </svg>
+        </div>
+        <figcaption><b>圖3</b>理解階段由心智圖、引註問答到語音概覽的三步驟流程</figcaption>
+      </figure>
+    </section>
+
+    <!-- PART 04 -->
+    <section class="section" id="part04">
+      <div class="section-number">PART 04</div>
+      <h2>複習階段：讓 AI 出題考自己</h2>
+      <p class="lead">知道要「考自己」，可是題目從哪裡來？</p>
+
+      <div class="sub">定義</div>
+      <p>複習階段就是把 PART 01 的提取練習落實成固定流程：讓 Gemini Notebook 依學習庫的內容出題，作答、對答案、把錯的地方補回來，然後隔幾天再來一輪。</p>
+
+      <div class="sub">公式</div>
+      <div class="formula">提取 → 回饋 → 回補 → 隔幾天再提取
+<span class="c">每完成一輪，n ＋ 1</span></div>
+
+      <div class="sub">原理解析</div>
+      <ul class="analysis">
+        <li><strong>學習盲點：</strong>自己出題太花時間，市面題庫又不一定對應手上的教材，結果複習最後又變回重讀。</li>
+        <li><strong>解決方法：</strong>用 Studio 產生<span class="accent-bold">測驗卡</span>與<span class="accent-bold">閃卡</span>，題目直接來自學習庫，也能自行增修題目。9 月更新加入的<span class="accent-bold">互動式學習概覽</span>（位於「報告」中），會把摘要、測驗、閃卡、心智圖整合在同一頁，方便一次複習完一個單元。</li>
+        <li><strong>構造公式：</strong>答錯的題目，點引註回到原文重讀那一段，這就是「回補」。重讀用在錯題上，而不是整本書，時間花得最有效率。</li>
+        <li><strong>比喻：</strong>這像混凝土的試體抽驗：定期取樣（出題）、試壓（作答）、不合格就追查原因（回補），而不是每次都把整車重拌一遍。</li>
+        <li><strong>向下相容：</strong>不方便看螢幕時，可用手機版 App 的<span class="accent-bold">即時語音對話</span>，用講的方式請 AI 提問、隨時打斷追問，目前支援近 100 種語言，限 18 歲以上使用者。</li>
+      </ul>
+
+      <figure class="figure-card">
+        <div class="fig-scroll">
+        <svg viewBox="0 0 800 480" role="img" aria-label="複習階段的提取、回饋、回補循環">
+          <!-- cycle nodes -->
+          <rect class="s-blue" x="300" y="24" width="200" height="70" rx="8"/>
+          <text class="t-wh" x="400" y="54" text-anchor="middle">① 提取</text>
+          <text class="t-w" x="400" y="78" text-anchor="middle" style="font-size:14px">測驗卡／閃卡作答</text>
+          <rect class="s-blue" x="540" y="190" width="200" height="70" rx="8"/>
+          <text class="t-wh" x="640" y="220" text-anchor="middle">② 回饋</text>
+          <text class="t-w" x="640" y="244" text-anchor="middle" style="font-size:14px">對答案＋看引註</text>
+          <rect class="s-blue" x="60" y="190" width="200" height="70" rx="8"/>
+          <text class="t-wh" x="160" y="220" text-anchor="middle">③ 回補</text>
+          <text class="t-w" x="160" y="244" text-anchor="middle" style="font-size:14px">只重讀錯題原文</text>
+          <!-- arrows -->
+          <path class="s-line-a" d="M505 70 Q610 90 636 182" marker-end="url(#arA)"/>
+          <path class="s-line-a" d="M534 252 Q400 320 266 252" marker-end="url(#arA)"/>
+          <path class="s-line-a" d="M164 182 Q190 90 295 70" marker-end="url(#arA)"/>
+          <!-- center -->
+          <circle class="s-panel" cx="400" cy="185" r="56"/>
+          <text class="t-b" x="400" y="180" text-anchor="middle">n ＋ 1</text>
+          <text class="t-s" x="400" y="204" text-anchor="middle" style="font-size:13px">隔幾天再一輪</text>
+          <!-- side note -->
+          <rect class="s-sidebox" x="60" y="300" width="680" height="62"/>
+          <text class="t" x="80" y="328" style="font-size:15px">◎ 互動式學習概覽：摘要＋測驗＋閃卡＋心智圖整合一頁</text>
+          <text class="t" x="80" y="352" style="font-size:15px">◎ 手機版即時語音對話：用講的複習，可隨時打斷追問</text>
+          <!-- conclusion -->
+          <rect class="s-concl" x="20" y="384" width="760" height="74" rx="6"/>
+          <text class="t-wh" x="400" y="416" text-anchor="middle">Test, check, patch</text>
+          <text class="t-w" x="400" y="442" text-anchor="middle" style="font-size:15px">重讀只用在錯題上，像試體不合格才追查</text>
+        </svg>
+        </div>
+        <figcaption><b>圖4</b>複習階段由提取、回饋到回補的循環流程與輔助工具</figcaption>
+      </figure>
+    </section>
+
+    <!-- PART 05 -->
+    <section class="section" id="part05">
+      <div class="section-number">PART 05</div>
+      <h2>總結：建庫、理解、複習三階段</h2>
+      <p class="lead">把前四個 PART 收在一起，一門課要怎麼排？</p>
+
+      <div class="sub">定義</div>
+      <p>整套方法可以收斂成三個階段：<span class="accent-bold">建庫</span>把材料集中、<span class="accent-bold">理解</span>先骨架後細節、<span class="accent-bold">複習</span>用出題取代重讀。不論準備技師考試、研讀專業書籍、整理研討會講義，還是自學新規範，流程都一樣。</p>
+
+      <div class="sub">三階段框架表</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>階段</th><th>要做的事</th><th>使用功能</th></tr></thead>
+          <tbody>
+            <tr><td>建庫</td><td>一科一本，放入教材、講義、錄音、筆記照片</td><td>來源上傳、行動版錄音</td></tr>
+            <tr><td>理解</td><td>先看整體架構，再針對難點提問</td><td>心智圖、引註問答、語音概覽</td></tr>
+            <tr><td>複習</td><td>出題作答、對答案、只補錯題，隔幾天再來</td><td>測驗卡、閃卡、互動式學習概覽、即時語音對話</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="sub">開始前檢查清單</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th style="width:44px">✓</th><th>檢查項目</th></tr></thead>
+          <tbody>
+            <tr><td class="chk">□</td><td>一門學科只建一本筆記本</td></tr>
+            <tr><td class="chk">□</td><td>上傳的教材已確認授權</td></tr>
+            <tr><td class="chk">□</td><td>讀新章節前先看過心智圖</td></tr>
+            <tr><td class="chk">□</td><td>每讀完一章就產生一次測驗</td></tr>
+            <tr><td class="chk">□</td><td>錯題已回原文補讀</td></tr>
+            <tr><td class="chk">□</td><td>關鍵公式與數據已對照教材原文</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <figure class="figure-card">
+        <div class="fig-scroll">
+        <svg viewBox="0 0 800 330" role="img" aria-label="建庫、理解、複習三階段框架">
+          <g>
+            <rect class="s-card" x="20" y="20" width="230" height="180" rx="6"/>
+            <rect x="20" y="20" width="230" height="46" rx="6" fill="#9C8563"/>
+            <text class="t-wh" x="135" y="50" text-anchor="middle">① 建庫 Build</text>
+            <text class="t" x="40" y="100" style="font-size:15px">◎ 一科一本</text>
+            <text class="t" x="40" y="128" style="font-size:15px">◎ 教材・講義・錄音</text>
+            <text class="t" x="40" y="156" style="font-size:15px">● 確認授權</text>
+
+            <rect class="s-card" x="285" y="20" width="230" height="180" rx="6"/>
+            <rect x="285" y="20" width="230" height="46" rx="6" fill="#6F93AC"/>
+            <text class="t-wh" x="400" y="50" text-anchor="middle">② 理解 Understand</text>
+            <text class="t" x="305" y="100" style="font-size:15px">◎ 心智圖看骨架</text>
+            <text class="t" x="305" y="128" style="font-size:15px">◎ 引註問答補細節</text>
+            <text class="t" x="305" y="156" style="font-size:15px">◎ 語音概覽複聽</text>
+
+            <rect class="s-card" x="550" y="20" width="230" height="180" rx="6"/>
+            <rect x="550" y="20" width="230" height="46" rx="6" fill="#5E958C"/>
+            <text class="t-wh" x="665" y="50" text-anchor="middle">③ 複習 Review</text>
+            <text class="t" x="570" y="100" style="font-size:15px">◎ 測驗卡・閃卡</text>
+            <text class="t" x="570" y="128" style="font-size:15px">● 只補錯題原文</text>
+            <text class="t" x="570" y="156" style="font-size:15px">◎ 隔幾天再一輪</text>
+          </g>
+          <g stroke="#E8A23C" stroke-width="6" marker-end="url(#arY)">
+            <line x1="252" y1="110" x2="276" y2="110"/>
+            <line x1="517" y1="110" x2="541" y2="110"/>
+          </g>
+          <rect class="s-concl" x="20" y="226" width="760" height="80" rx="6"/>
+          <text class="t-wh" x="400" y="260" text-anchor="middle">Build → Understand → Review</text>
+          <text class="t-w" x="400" y="287" text-anchor="middle" style="font-size:15px">讀過不算數，考得出來才算學會</text>
+        </svg>
+        </div>
+        <figcaption><b>圖5</b>讀書學習庫建庫、理解、複習三階段框架與各階段重點</figcaption>
+      </figure>
+    </section>
+
+    <div class="outro">
+      <h3>系列文與延伸閱讀</h3>
+      <p style="margin:0 0 10px;font-size:15px">前篇〈應用Gemini Notebook建立工程知識庫〉介紹分庫、版本管理與引註查核，可與本文搭配閱讀。各位工程師準備考試或研讀專書時，有什麼好用的出題方式，歡迎留言分享。本文工具資訊參考：</p>
+      <ul>
+        <li><a href="https://blog.google/innovation-and-ai/products/gemini-notebook/new-study-tools-september-2026/" target="_blank" rel="noopener">Google 官方部落格：Gemini Notebook 九月學習新功能（2026.09.15）</a></li>
+        <li><a href="https://support.google.com/gemininotebook/answer/16215270" target="_blank" rel="noopener">Gemini Notebook 說明中心：來源類型與限制</a></li>
+        <li><a href="https://blog.google/innovation-and-ai/products/gemini-notebook/notebooklm-gemini-notebook/" target="_blank" rel="noopener">Google 官方部落格：NotebookLM is now Gemini Notebook（2026.07.16）</a></li>
+      </ul>
+    </div>
+
+  </main>
+</div>
+
+<footer>
+  <div>作者：<strong>張朝順 PhD/PE</strong></div>
+ 
+</footer>
+
+</body></html>
