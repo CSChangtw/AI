@@ -1,0 +1,1797 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>土木工程專業軟體 MCP 之 AI 協作設計</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  /* ── 設計令牌 ── */
+  :root {
+    --ink:        #1C2331;
+    --ink-soft:   #3D4D5C;
+    --eng-blue:   #2C5F8A;
+    --eng-blue-l: #4A85B5;
+    --accent:     #D4450C;       /* 橙紅重點色 */
+    --accent-l:   #F26030;
+    --bg:         #F5F6F8;
+    --bg-white:   #FFFFFF;
+    --bg-card:    #EEF1F5;
+    --rule:       #D0D6DE;
+    --code-bg:    #1E2B3A;
+    --code-text:  #C8D8E8;
+    --grid-line:  rgba(44,95,138,0.07);
+
+    --font-head:  'IBM Plex Sans', sans-serif;
+    --font-body:  'Noto Sans TC', sans-serif;
+    --font-mono:  'IBM Plex Mono', monospace;
+
+    --max-w: 860px;
+    --nav-w: 220px;
+  }
+
+  /* ── Reset ── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+
+  /* ── 藍圖格線背景（簽名元素）── */
+  body {
+    background-color: var(--bg);
+    background-image:
+      linear-gradient(var(--grid-line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+    background-size: 40px 40px;
+    font-family: var(--font-body);
+    color: var(--ink);
+    line-height: 1.8;
+    font-size: 16px;
+  }
+
+  /* ── 頁首 ── */
+  header {
+    background: linear-gradient(135deg, #0D1820 0%, var(--ink) 50%, #1A3550 100%);
+    color: #fff;
+    padding: 72px 40px 60px;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(44,95,138,0.15) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(44,95,138,0.15) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+  header::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--accent), var(--accent-l), var(--eng-blue-l));
+  }
+  .header-inner {
+    max-width: var(--max-w);
+    margin: 0 auto;
+    position: relative;
+    z-index: 1;
+  }
+  .header-eyebrow {
+    font-family: var(--font-head);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--accent-l);
+    margin-bottom: 18px;
+  }
+  header h1 {
+    font-family: var(--font-head);
+    font-size: clamp(28px, 4vw, 42px);
+    font-weight: 700;
+    line-height: 1.2;
+    color: #fff;
+    margin-bottom: 20px;
+  }
+  header h1 span { color: var(--accent-l); }
+  .header-meta {
+    font-size: 13px;
+    color: rgba(255,255,255,0.55);
+    font-family: var(--font-head);
+    letter-spacing: 0.04em;
+  }
+  .header-meta strong { color: rgba(255,255,255,0.85); }
+
+  /* ── 版型容器 ── */
+  .page-wrapper {
+    max-width: calc(var(--max-w) + var(--nav-w) + 60px);
+    margin: 0 auto;
+    padding: 48px 24px 96px;
+    display: flex;
+    gap: 48px;
+    align-items: flex-start;
+  }
+
+  /* ── 側邊導航 ── */
+  .side-nav {
+    width: var(--nav-w);
+    flex-shrink: 0;
+    position: sticky;
+    top: 32px;
+  }
+  .side-nav-label {
+    font-family: var(--font-head);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin-bottom: 12px;
+    padding-left: 12px;
+  }
+  .side-nav ul { list-style: none; }
+  .side-nav ul li { margin-bottom: 2px; }
+  .side-nav ul li a {
+    display: block;
+    padding: 7px 12px;
+    font-family: var(--font-head);
+    font-size: 13px;
+    color: var(--ink-soft);
+    text-decoration: none;
+    border-left: 3px solid transparent;
+    transition: all 0.2s;
+    line-height: 1.4;
+  }
+  .side-nav ul li a:hover {
+    color: var(--eng-blue);
+    border-left-color: var(--eng-blue);
+    background: rgba(44,95,138,0.06);
+  }
+  .side-nav ul li.accent a {
+    color: var(--accent);
+    font-weight: 600;
+  }
+
+  /* ── 主內容區 ── */
+  .article-body { flex: 1; min-width: 0; }
+
+  /* ── 摘要卡片 ── */
+  .abstract {
+    background: var(--bg-white);
+    border-left: 4px solid var(--accent);
+    border-radius: 0 8px 8px 0;
+    padding: 24px 28px;
+    margin-bottom: 48px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  }
+  .abstract p {
+    font-size: 15px;
+    color: var(--ink-soft);
+    line-height: 1.9;
+  }
+  .abstract strong { color: var(--accent); }
+
+  /* ── 章節標題 ── */
+  .section { margin-bottom: 56px; }
+  .section-number {
+    font-family: var(--font-head);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--eng-blue-l);
+    margin-bottom: 8px;
+    display: block;
+  }
+  h2 {
+    font-family: var(--font-head);
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--ink);
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid var(--rule);
+    line-height: 1.3;
+  }
+  h2 .accent-word { color: var(--accent); }
+  h3 {
+    font-family: var(--font-head);
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--eng-blue);
+    margin: 32px 0 12px;
+  }
+  h4 {
+    font-family: var(--font-head);
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--ink);
+    margin: 20px 0 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  /* ── 內文段落 ── */
+  p { margin-bottom: 16px; color: var(--ink); }
+  .accent-bold { color: var(--accent); font-weight: 700; }
+
+  /* ── 架構圖：純 div 卡片堆疊，完全避免 ASCII 換行問題 ── */
+  .arch-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    margin: 28px 0;
+  }
+  .arch-node {
+    border-radius: 10px;
+    padding: 20px 24px;
+    position: relative;
+  }
+  .arch-node.host   { background: #163450; border: 1.5px solid #79C7E3; }
+  .arch-node.client { background: #12301E; border: 1.5px solid #82E0AA; }
+  .arch-node.server { background: #2E1F05; border: 1.5px solid #F8C471; }
+  .arch-node.sw     { background: #1E1215; border: 1.5px solid var(--accent-l); }
+  .arch-node-title {
+    font-family: var(--font-head);
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 10px;
+  }
+  .arch-node.host   .arch-node-title { color: #79C7E3; }
+  .arch-node.client .arch-node-title { color: #82E0AA; }
+  .arch-node.server .arch-node-title { color: #F8C471; }
+  .arch-node.sw     .arch-node-title { color: var(--accent-l); }
+  .arch-node-items {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .arch-tag {
+    font-family: var(--font-head);
+    font-size: 12px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    background: rgba(255,255,255,0.08);
+    color: rgba(255,255,255,0.75);
+    white-space: nowrap;
+  }
+  .arch-connector {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 24px;
+  }
+  .arch-connector-line {
+    flex: 1;
+    height: 1px;
+    background: rgba(255,255,255,0.15);
+  }
+  .arch-connector-label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: rgba(200,216,232,0.5);
+    white-space: nowrap;
+  }
+  .arch-connector-arrow {
+    color: rgba(200,216,232,0.4);
+    font-size: 16px;
+    line-height: 1;
+  }
+  /* 架構圖外層深色背景容器 */
+  .arch-diagram-wrap {
+    background: var(--code-bg);
+    border-radius: 12px;
+    padding: 24px 20px;
+    margin: 28px 0;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.18);
+  }
+
+  /* ── 程式碼區塊 ── */
+  pre {
+    background: var(--code-bg);
+    border-radius: 8px;
+    padding: 24px 28px;
+    overflow-x: auto;
+    margin: 20px 0;
+    border-top: 3px solid var(--eng-blue);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+  }
+  code {
+    font-family: var(--font-mono);
+    font-size: 13.5px;
+    line-height: 1.8;
+    color: var(--code-text);
+  }
+  .code-label {
+    font-family: var(--font-head);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--eng-blue-l);
+    margin-bottom: 6px;
+  }
+  .kw  { color: #C792EA; }
+  .fn  { color: #82AAFF; }
+  .str { color: #C3E88D; }
+  .cm  { color: #546E7A; font-style: italic; }
+  .num { color: #F78C6C; }
+  .cls { color: #FFCB6B; }
+
+  /* ── 三欄能力卡片 ── */
+  .capability-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin: 24px 0;
+  }
+  .cap-card {
+    background: var(--bg-white);
+    border-radius: 10px;
+    padding: 22px 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+    border-top: 3px solid var(--eng-blue);
+  }
+  .cap-card.tools  { border-top-color: var(--accent); }
+  .cap-card.resources { border-top-color: var(--eng-blue); }
+  .cap-card.prompts { border-top-color: #27AE60; }
+  .cap-card-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  .cap-card-icon {
+    font-size: 20px;
+    line-height: 1;
+    flex-shrink: 0;
+  }
+  .cap-card h4 {
+    font-size: 14px;
+    margin: 0;
+    text-transform: none;
+    letter-spacing: 0;
+  }
+  .cap-card p {
+    font-size: 13px;
+    color: var(--ink-soft);
+    line-height: 1.6;
+    margin: 0;
+  }
+
+  /* ── 表格 ── */
+  .table-wrap { overflow-x: auto; margin: 20px 0; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+    background: var(--bg-white);
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+  }
+  thead { background: var(--eng-blue); color: #fff; }
+  thead th {
+    padding: 12px 16px;
+    text-align: left;
+    font-family: var(--font-head);
+    font-weight: 600;
+    font-size: 13px;
+    letter-spacing: 0.04em;
+  }
+  tbody tr:nth-child(even) { background: var(--bg-card); }
+  tbody td {
+    padding: 11px 16px;
+    border-bottom: 1px solid var(--rule);
+    vertical-align: top;
+    line-height: 1.6;
+    color: var(--ink-soft);
+  }
+  tbody td:first-child {
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    color: var(--accent);
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  tbody tr:last-child td { border-bottom: none; }
+
+  /* ── 提示框 ── */
+  .callout {
+    display: flex;
+    gap: 16px;
+    background: var(--bg-card);
+    border-left: 4px solid var(--accent);
+    border-radius: 0 8px 8px 0;
+    padding: 18px 20px;
+    margin: 20px 0;
+  }
+  .callout-icon { font-size: 20px; flex-shrink: 0; margin-top: 2px; }
+  .callout-body { font-size: 14px; color: var(--ink-soft); line-height: 1.7; }
+  .callout-body strong { color: var(--accent); font-weight: 700; }
+  .callout.info { border-left-color: var(--eng-blue); }
+  .callout.info .callout-body strong { color: var(--eng-blue); }
+
+  /* ── 步驟清單 ── */
+  .steps { list-style: none; margin: 16px 0; }
+  .steps li {
+    display: flex;
+    gap: 14px;
+    margin-bottom: 14px;
+    align-items: flex-start;
+  }
+  .step-num {
+    flex-shrink: 0;
+    width: 28px; height: 28px;
+    background: var(--eng-blue);
+    color: #fff;
+    border-radius: 50%;
+    font-family: var(--font-head);
+    font-size: 13px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 2px;
+  }
+  .steps li p { margin: 0; font-size: 14.5px; line-height: 1.7; }
+
+  /* ── 流程圖 ── */
+  .flow-diagram {
+    background: var(--bg-white);
+    border-radius: 10px;
+    padding: 28px;
+    margin: 24px 0;
+    border: 1px solid var(--rule);
+    box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+    font-family: var(--font-head);
+  }
+  .flow-step {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-bottom: 4px;
+    font-size: 14px;
+    font-weight: 500;
+  }
+  .flow-step.host   { background: rgba(44,95,138,0.1);  color: var(--eng-blue); }
+  .flow-step.client { background: rgba(39,174,96,0.1);  color: #1E8449; }
+  .flow-step.server { background: rgba(212,69,12,0.1);  color: var(--accent); }
+  .flow-step.sw     { background: rgba(28,35,49,0.08);  color: var(--ink); }
+  .flow-arrow {
+    text-align: center;
+    color: var(--rule);
+    font-size: 18px;
+    line-height: 1;
+    margin: 2px 0;
+  }
+  .flow-label {
+    display: inline-block;
+    background: var(--bg-card);
+    border-radius: 4px;
+    padding: 2px 8px;
+    font-size: 11px;
+    font-family: var(--font-mono);
+    color: var(--ink-soft);
+    margin-left: 8px;
+    font-weight: 400;
+  }
+
+  /* ── Project 設定卡片 ── */
+  .project-card {
+    background: var(--bg-white);
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    margin: 20px 0;
+  }
+  .project-card-header {
+    background: var(--ink);
+    color: #fff;
+    padding: 14px 20px;
+    font-family: var(--font-head);
+    font-size: 13px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .project-card-header span { color: var(--accent-l); }
+  .project-card-body { padding: 20px 24px; }
+  .project-card-body p { font-size: 14px; color: var(--ink-soft); margin-bottom: 12px; }
+  .project-card-body p:last-child { margin-bottom: 0; }
+
+  /* ── 優勢清單 ── */
+  .advantage-list { list-style: none; margin: 16px 0; }
+  .advantage-list li {
+    padding: 10px 0;
+    border-bottom: 1px solid var(--rule);
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    font-size: 14.5px;
+    line-height: 1.7;
+    color: var(--ink-soft);
+  }
+  .advantage-list li:last-child { border-bottom: none; }
+  .advantage-list li::before {
+    content: '▶';
+    color: var(--accent);
+    font-size: 10px;
+    margin-top: 5px;
+    flex-shrink: 0;
+  }
+  .advantage-list li strong { color: var(--accent); font-weight: 700; }
+
+  /* ── 注意事項卡片網格 ── */
+  .notice-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+    margin: 20px 0;
+  }
+  .notice-card {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    background: var(--bg-white);
+    border-radius: 10px;
+    padding: 16px 18px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+    border-left: 4px solid var(--accent);
+  }
+  .notice-icon {
+    font-size: 22px;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .notice-title {
+    font-family: var(--font-head);
+    font-size: 13.5px;
+    font-weight: 700;
+    color: var(--accent);
+    margin-bottom: 5px;
+  }
+  .notice-desc {
+    font-size: 13px;
+    color: var(--ink-soft);
+    line-height: 1.6;
+  }
+  @media (max-width: 600px) {
+    .notice-grid { grid-template-columns: 1fr; }
+  }
+
+  /* ── 參考文獻 ── */
+  .references {
+    background: var(--bg-white);
+    border-radius: 10px;
+    padding: 24px 28px;
+    margin-top: 16px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+    border-top: 3px solid var(--eng-blue);
+  }
+  .ref-item {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--rule);
+  }
+  .ref-item:last-child { border-bottom: none; }
+  .ref-num {
+    flex-shrink: 0;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--bg-white);
+    background: var(--eng-blue);
+    border-radius: 4px;
+    padding: 2px 7px;
+    margin-top: 3px;
+    line-height: 1.6;
+  }
+  .ref-body {
+    font-size: 13.5px;
+    line-height: 1.75;
+    color: var(--ink-soft);
+  }
+  .ref-body em {
+    font-style: italic;
+    color: var(--ink);
+  }
+  .ref-url {
+    display: block;
+    margin-top: 4px;
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    color: var(--eng-blue-l);
+    word-break: break-all;
+    text-decoration: none;
+    line-height: 1.5;
+  }
+  .ref-url:hover { text-decoration: underline; }
+
+  /* ── 結論卡片網格 ── */
+  .conclusion-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+    margin: 20px 0 32px;
+  }
+  .conclusion-card {
+    background: var(--bg-white);
+    border-radius: 10px;
+    padding: 20px 20px 18px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+    border-top: 3px solid var(--eng-blue);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .conclusion-num {
+    font-family: var(--font-head);
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--rule);
+    line-height: 1;
+  }
+  .conclusion-title {
+    font-family: var(--font-head);
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--eng-blue);
+    margin-bottom: 6px;
+    line-height: 1.4;
+  }
+  .conclusion-card p {
+    font-size: 13.5px;
+    color: var(--ink-soft);
+    line-height: 1.7;
+    margin: 0;
+  }
+
+  /* ── 分階段導入 ── */
+  .phase-list {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin: 20px 0 32px;
+  }
+  .phase-item {
+    background: var(--bg-white);
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+  }
+  .phase-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 20px;
+    background: var(--bg-card);
+    border-bottom: 1px solid var(--rule);
+    flex-wrap: wrap;
+  }
+  .phase-badge {
+    font-family: var(--font-head);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    padding: 4px 12px;
+    border-radius: 20px;
+    white-space: nowrap;
+    color: #fff;
+  }
+  .phase-1 { background: var(--eng-blue); }
+  .phase-2 { background: #27AE60; }
+  .phase-3 { background: var(--accent); }
+  .phase-title {
+    font-family: var(--font-head);
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--ink);
+  }
+  .phase-body { padding: 16px 20px; }
+  .phase-tasks {
+    list-style: none;
+    margin: 0; padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .phase-tasks li {
+    font-size: 13.5px;
+    color: var(--ink-soft);
+    line-height: 1.65;
+    padding-left: 18px;
+    position: relative;
+  }
+  .phase-tasks li::before {
+    content: '›';
+    position: absolute;
+    left: 0;
+    color: var(--accent);
+    font-weight: 700;
+    font-size: 16px;
+    line-height: 1.3;
+  }
+
+  /* ── 風險表格／卡片響應式切換 ── */
+  .risk-card-mobile { display: none; }
+
+  .risk-card {
+    background: var(--bg-white);
+    border-radius: 10px;
+    padding: 18px 20px;
+    margin-bottom: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+    border-left: 4px solid var(--accent);
+  }
+  .risk-card-title {
+    font-family: var(--font-head);
+    font-size: 14.5px;
+    font-weight: 700;
+    color: var(--accent);
+    margin-bottom: 12px;
+  }
+  .risk-card-row {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin-bottom: 10px;
+  }
+  .risk-card-row:last-child { margin-bottom: 0; }
+  .risk-card-label {
+    font-family: var(--font-head);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    color: var(--eng-blue);
+    text-transform: uppercase;
+  }
+  .risk-card-value {
+    font-size: 13.5px;
+    color: var(--ink-soft);
+    line-height: 1.65;
+  }
+
+  @media (max-width: 640px) {
+    .risk-table-desktop { display: none; }
+    .risk-card-mobile { display: block; }
+  }
+
+  footer {
+    background: var(--ink);
+    color: rgba(255,255,255,0.5);
+    text-align: center;
+    padding: 32px;
+    font-size: 13px;
+    font-family: var(--font-head);
+    letter-spacing: 0.04em;
+  }
+  footer strong { color: rgba(255,255,255,0.8); }
+
+  /* ── RWD ── */
+  @media (max-width: 900px) {
+    .side-nav { display: none; }
+    .capability-grid { grid-template-columns: 1fr; }
+    header { padding: 48px 24px 40px; }
+    .page-wrapper { padding: 32px 16px 64px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ══ 頁首 ══ -->
+<header>
+  <div class="header-inner">
+    <p class="header-eyebrow">技術專文 · Model Context Protocol</p>
+    <h1>土木工程專業軟體 <span>MCP</span> 之<br>AI 協作設計</h1>
+    <p class="header-meta">
+      關鍵字：<strong>MCP · Claude Project · Python·ETABS COM API</strong> &nbsp;·&nbsp;
+      2026年
+    </p>
+  </div>
+</header>
+
+<!-- ══ 頁面版型 ══ -->
+<div class="page-wrapper">
+
+  <!-- 側邊導航 -->
+  <nav class="side-nav">
+    <p class="side-nav-label">目錄</p>
+    <ul>
+      <li><a href="#abstract">摘要</a></li>
+      <li><a href="#definition">一、MCP 定義</a></li>
+      <li><a href="#architecture">二、組成架構</a></li>
+      <li><a href="#application">三、用途與優勢</a></li>
+      <li><a href="#claude-project">四、Claude Project 協作</a></li>
+      <li class="accent"><a href="#etabs-case">五、ETABS 實作案例</a></li>
+      <li><a href="#conclusion">六、結論與建議</a></li>
+      <li><a href="#references-section">參考文獻</a></li>
+    </ul>
+  </nav>
+
+  <!-- 主內容 -->
+  <article class="article-body">
+
+    <!-- 摘要 -->
+    <div class="abstract" id="abstract">
+      <p>
+        本文以 <strong>Model Context Protocol（MCP）</strong> 為核心，系統性探討如何將 AI 大型語言模型與
+        土木工程大型分析軟體深度整合。文章涵蓋 MCP 的定義與三層架構原理、土木工程自動化的應用優勢、
+        透過 <strong>Claude Project</strong> 進行知識庫協作的完整設定方法，並以
+        <strong>ETABS 結構分析軟體</strong>為具體實作案例，示範 MCP 的組成設計、
+        導入流程與工程師日常使用方式。
+      </p>
+    </div>
+
+    <!-- ══ 一、MCP 定義 ══ -->
+    <section class="section" id="definition">
+      <span class="section-number">Section 01</span>
+      <h2>MCP 的<span class="accent-word">定義</span></h2>
+
+      <p>
+        <span class="accent-bold">Model Context Protocol（MCP，模型上下文協議）</span>
+        是由 Anthropic 提出的開放標準協議，目的是在 AI 大型語言模型（LLM）與外部資料來源、
+        工具及服務之間，建立一套標準化的雙向通信橋樑。
+      </p>
+      <p>
+        傳統上，AI 助手的能力受限於訓練資料的靜態知識，無法主動操作外部軟體或即時存取工程模型。
+        MCP 打破了這道邊界——它讓 AI 不只是「回答問題的助手」，而是能夠
+        <span class="accent-bold">直接驅動工程軟體執行計算、提取數據、修改模型</span>的數位協作夥伴。
+      </p>
+      <p>
+        對土木工程師而言，MCP 的意義在於：
+        只需以<span class="accent-bold">自然語言</span>下達指令（例如「分析所有梁的應力比並標記超載元素」），
+        AI 便能透過 MCP 自動完成原本需要數小時手動操作的工作流程。
+      </p>
+
+      <div class="callout">
+        <div class="callout-icon">📐</div>
+        <div class="callout-body">
+          MCP 採用 <strong>JSON-RPC 2.0</strong> 作為通信格式，並從語言服務器協議（LSP）汲取靈感，
+          以相同的標準化思路，將 AI 整合至工程軟體生態系統的每個角落。
+        </div>
+      </div>
+    </section>
+
+    <!-- ══ 二、組成架構 ══ -->
+    <section class="section" id="architecture">
+      <span class="section-number">Section 02</span>
+      <h2>MCP 的<span class="accent-word">組成架構</span></h2>
+
+      <p>
+        MCP 採用<span class="accent-bold">主機－客戶端－服務器（Host-Client-Server）三層核心架構</span>。
+        這種設計在傳統 C/S 架構基礎上引入了「主機」協調層，使 AI 大模型得以統籌調度多個工程軟體並行執行任務。
+      </p>
+
+      <div class="arch-diagram-wrap">
+        <div class="arch-stack">
+
+          <!-- Host -->
+          <div class="arch-node host">
+            <div class="arch-node-title">🖥️ MCP 主機 Host &nbsp;——&nbsp; AI 對話介面（Claude）</div>
+            <div class="arch-node-items">
+              <span class="arch-tag">● 接收自然語言指令</span>
+              <span class="arch-tag">● 編排任務計劃</span>
+              <span class="arch-tag">● 跨客戶端上下文聚合</span>
+              <span class="arch-tag">● 大模型整合與採樣</span>
+            </div>
+          </div>
+
+          <!-- 連接線 -->
+          <div class="arch-connector">
+            <div class="arch-connector-line"></div>
+            <span class="arch-connector-arrow">↕</span>
+            <span class="arch-connector-label">JSON-RPC 2.0</span>
+            <div class="arch-connector-line"></div>
+          </div>
+
+          <!-- Client -->
+          <div class="arch-node client">
+            <div class="arch-node-title">🔗 MCP 客戶端 Client &nbsp;——&nbsp; 主機內部業務進程</div>
+            <div class="arch-node-items">
+              <span class="arch-tag">● 維持 1:1 有狀態會話</span>
+              <span class="arch-tag">● 協議版本協商</span>
+              <span class="arch-tag">● 雙向消息路由</span>
+              <span class="arch-tag">● 訂閱與通知管理</span>
+            </div>
+          </div>
+
+          <!-- 連接線 -->
+          <div class="arch-connector">
+            <div class="arch-connector-line"></div>
+            <span class="arch-connector-arrow">↕</span>
+            <span class="arch-connector-label">COM / REST / SDK / gRPC</span>
+            <div class="arch-connector-line"></div>
+          </div>
+
+          <!-- Server -->
+          <div class="arch-node server">
+            <div class="arch-node-title">⚙️ MCP 服務器 Server &nbsp;——&nbsp; 外部服務代理閘道</div>
+            <div class="arch-node-items">
+              <span class="arch-tag">🔧 工具 Tools — 可執行的操作命令</span>
+              <span class="arch-tag">📊 資源 Resources — 可讀取的數據上下文</span>
+              <span class="arch-tag">📝 提示語 Prompts — 可重用的任務模板</span>
+            </div>
+          </div>
+
+          <!-- 連接線 -->
+          <div class="arch-connector">
+            <div class="arch-connector-line"></div>
+            <span class="arch-connector-arrow">↕</span>
+            <span class="arch-connector-label">API 調用</span>
+            <div class="arch-connector-line"></div>
+          </div>
+
+          <!-- 目標軟體 -->
+          <div class="arch-node sw">
+            <div class="arch-node-title">🏗️ 目標工程軟體 &nbsp;——&nbsp; ETABS / ANSYS / SAP2000…</div>
+            <div class="arch-node-items">
+              <span class="arch-tag">● 執行結構計算</span>
+              <span class="arch-tag">● 返回分析結果</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <h3>主機（Host）——「大腦」</h3>
+      <p>
+        主機是工程師與 AI 大模型直接交互的終端，例如 Claude 對話介面或 AI 編輯器。
+        它負責創建並管理多個客戶端進程，掌控連接權限與生命周期，
+        並承擔<span class="accent-bold">大模型集成、自然語言理解及跨客戶端的上下文聚合</span>等核心任務。
+      </p>
+
+      <h3>客戶端（Client）——「秘書」</h3>
+      <p>
+        客戶端「寄生」於主機內部，是主機與服務器之間的通信橋樑。
+        每個客戶端與特定 MCP 服務器維持
+        <span class="accent-bold">1:1 的獨立有狀態連接</span>，
+        負責協議協商、雙向消息路由，以及追蹤多步驟工作流程的執行狀態
+        （例如記住「第 3 次迭代後梁斷面已改為 H400×200」）。
+      </p>
+
+      <h3>服務器（Server）——「執行手」</h3>
+      <p>
+        服務器是運行在主機之外的獨立程序，透過軟體 API 直接操控目標工程軟體。
+        它提供三種核心能力：
+      </p>
+      <div class="capability-grid">
+        <div class="cap-card tools">
+          <div class="cap-card-header">
+            <span class="cap-card-icon">🔧</span>
+            <h4><span style="color:var(--accent)">工具 Tools</span></h4>
+          </div>
+          <p>可執行的操作命令，如連接軟體、執行分析、修改斷面、匯出報表。對應軟體 API 的函式調用。</p>
+        </div>
+        <div class="cap-card resources">
+          <div class="cap-card-header">
+            <span class="cap-card-icon">📊</span>
+            <h4><span style="color:var(--eng-blue)">資源 Resources</span></h4>
+          </div>
+          <p>可讀取的數據上下文，如模型幾何、材料屬性、分析結果數據集，供 AI 進行推理與判斷。</p>
+        </div>
+        <div class="cap-card prompts">
+          <div class="cap-card-header">
+            <span class="cap-card-icon">📝</span>
+            <h4><span style="color:#27AE60">提示語 Prompts</span></h4>
+          </div>
+          <p>可重複使用的任務模板，如「迭代優化」、「自動出報表」，讓工程師直接套用常見工作流。</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══ 三、用途與優勢 ══ -->
+    <section class="section" id="application">
+      <span class="section-number">Section 03</span>
+      <h2>用途與<span class="accent-word">應用優勢</span></h2>
+
+      <h3>土木工程的核心應用場景</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>工作流類型</th>
+              <th>傳統作業方式</th>
+              <th>MCP 自動化後</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>資料提取與報表</td>
+              <td>手動逐項複製貼上至 Excel，易出錯</td>
+              <td>批量提取千筆數據，秒級輸出結構化報表</td>
+            </tr>
+            <tr>
+              <td>迭代斷面優化</td>
+              <td>反覆修改→分析→記錄，耗時數小時</td>
+              <td>AI 自動執行設計迴圈，直到所有元素合規</td>
+            </tr>
+            <tr>
+              <td>批量模型建立</td>
+              <td>逐一輸入幾何與荷載，重複性極高</td>
+              <td>讀取 CSV 參數後自動生成完整結構模型</td>
+            </tr>
+            <tr>
+              <td>法規合規檢查</td>
+              <td>手動比對規範，容易遺漏邊界案例</td>
+              <td>AI 全自動逐項比對，輸出違規清單</td>
+            </tr>
+            <tr>
+              <td>跨軟體數據交換</td>
+              <td>手動匯出再匯入，格式轉換錯誤頻繁</td>
+              <td>自動轉換格式，驗證數據完整性後匯入</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>導入 MCP 的關鍵優勢</h3>
+      <ul class="advantage-list">
+        <li><strong>節省 40% 例行工作時間</strong>將重複性手動操作交由 AI 執行，工程師專注於判斷與設計決策</li>
+        <li><strong>整體生產力提升 2–3 倍</strong>AI 可同時協調多個工具，並行處理複雜的多步驟工作流</li>
+        <li><strong>減少 60% 人為輸入錯誤</strong>一致的程式化操作取代手動複製，消除疏漏與轉抄錯誤</li>
+        <li><strong>自然語言驅動操作</strong>工程師無需學習 API 語法，用說話的方式即可驅動專業軟體</li>
+        <li><strong>知識可積累與複用</strong>工作流以提示語模板形式保存，組織知識系統化沉澱</li>
+        <li><strong>跨軟體整合能力</strong>同一 MCP 生態系統可同時連接 ETABS、SAP2000、Revit 等多套軟體</li>
+      </ul>
+    </section>
+
+    <!-- ══ 四、Claude Project 協作 ══ -->
+    <section class="section" id="claude-project">
+      <span class="section-number">Section 04</span>
+      <h2>Claude Project <span class="accent-word">協作設定</span></h2>
+
+      <p>
+        Claude Project 是在 Claude.ai 平台中建立的<span class="accent-bold">長期協作專案空間</span>，
+        讓工程師能夠將 MCP 知識庫、操作規範與工作指令集中管理，
+        使 AI 在每次對話中都具備完整的工程背景知識，無需重複說明前提。
+      </p>
+
+      <h3>4.1 建立 Project 的基礎設定</h3>
+      <ul class="steps">
+        <li>
+          <div class="step-num">1</div>
+          <p>登入 <strong>Claude.ai</strong>，在左側欄點擊「New Project」，命名為「ETABS MCP 自動化」或對應的工程專案名稱。</p>
+        </li>
+        <li>
+          <div class="step-num">2</div>
+          <p>進入 Project 設定頁面，確認使用的模型版本（建議選擇 <strong>Claude Sonnet</strong> 或以上版本以獲得最佳推理能力）。</p>
+        </li>
+        <li>
+          <div class="step-num">3</div>
+          <p>在 Project 內進行的所有對話將<strong>共享同一組 Project Knowledge 與 Custom Instructions</strong>，形成一致的工作環境。</p>
+        </li>
+      </ul>
+
+      <h3>4.2 Project Knowledge（知識庫）</h3>
+      <p>
+        Project Knowledge 是上傳至 Project 的<span class="accent-bold">靜態參考文件</span>，
+        AI 在每次對話時都能查閱這些知識作為背景。
+        對土木工程 MCP 協作而言，應上傳以下類型的文件：
+      </p>
+
+      <div class="project-card">
+        <div class="project-card-header">
+          📂 <span>Project Knowledge</span> 建議上傳內容
+        </div>
+        <div class="project-card-body">
+          <p><strong>① MCP 架構知識庫</strong>——本文所描述的 Host-Client-Server 三層架構說明，作為 AI 撰寫 MCP 文件的格式依據。</p>
+          <p><strong>② 目標軟體 API 文件</strong>——例如 ETABS API 指導綱要、CSI 官方 API 手冊摘要，使 AI 能掌握正確的函式名稱與參數規格。</p>
+          <p><strong>③ 已完成的 MCP 文件範本</strong>——如前述 ETABS API MCP 架構知識庫文件，作為後續撰寫的品質參照標準。</p>
+          <p><strong>④ 法規與設計規範摘要</strong>——如 ACI 318、AISC 360 重點條文，供合規檢查工作流使用。</p>
+        </div>
+      </div>
+
+      <h3>4.3 Custom Instructions（自訂指令）</h3>
+      <p>
+        Custom Instructions 定義了 AI 在此 Project 中的<span class="accent-bold">角色定位、行為規範與輸出格式要求</span>，
+        是確保每次對話品質一致的核心機制。以下是針對土木工程 MCP 協作的完整 Custom Instructions 結構：
+      </p>
+      <div class="code-label">Custom Instructions 核心結構</div>
+      <pre><code><span class="cm"># Custom Instructions：大型專業分析軟體 MCP 撰寫規範</span>
+
+<span class="cm">## 角色定義</span>
+你是一位專業的工程軟體 MCP 架構師，精通 MCP 三層架構設計
+與各類大型專業分析軟體的 API 整合。
+
+<span class="cm">## 【第一步】啟動前確認：索取 API 文件</span>
+在接受任何 MCP 撰寫任務時，必須優先確認：
+- 軟體名稱與版本
+- 官方 API 文件（PDF、網址或安裝路徑）
+- API 介面類型（COM / REST / SDK / gRPC / CLI）
+- 目標自動化工作流程
+
+若上述任一項目缺失，使用以下提示語向使用者確認：
+「在開始撰寫 [軟體名稱] 的 MCP 之前，請提供官方 API 文件
+ 與軟體版本，以確保所有函式名稱準確無誤。」
+
+<span class="cm">## 一、架構撰寫規範</span>
+- 必須完整描述 Host / Client / Server 三層架構
+- Server 章節必須涵蓋工具、資源、提示語三類能力
+- 文件末尾必須描述基礎協議、授權框架、額外工具
+
+<span class="cm">## 二、API 技術規範</span>
+- 連接初始化必須遵循四步驟框架
+- 所有 API 調用必須包含錯誤處理邏輯
+- 腳本結束時必須包含資源釋放流程
+- 迭代流程必須定義終止條件（建議上限 20 次）
+
+<span class="cm">## 三、禁止事項</span>
+❌ 未取得 API 文件即填入具體函式名稱
+❌ 省略任一層架構
+❌ 省略錯誤處理
+❌ 在迭代流程中省略終止條件
+❌ 混淆工具（可執行操作）與資源（可讀取數據）的定義</code></pre>
+
+      <h3>4.4 Chat 提示語設計</h3>
+      <p>
+        在 Project 中與 AI 互動時，提示語的品質直接影響輸出結果。
+        以下為針對不同工程任務設計的<span class="accent-bold">標準提示語模板</span>：
+      </p>
+
+      <div class="code-label">提示語模板 A：撰寫新軟體的 MCP 文件</div>
+      <pre><code>請根據以下資料，撰寫符合知識庫規範的 [軟體名稱] MCP 文件：
+
+- 軟體版本：[版本號]
+- API 文件來源：[URL 或文件名稱]
+- API 介面類型：[COM / REST / Python SDK]
+- 主要自動化工作流：[工作流描述]
+
+文件必須包含完整的 Host / Client / Server 三層架構說明，
+以及工具、資源、提示語三類服務器能力，並附上典型工作流圖示。</code></pre>
+
+      <div class="code-label">提示語模板 B：生成自動化腳本</div>
+      <pre><code>請依據 ETABS API MCP 知識庫，撰寫以下自動化腳本：
+
+任務：[任務描述，例如：提取所有荷載組合下的柱軸力]
+條件：[條件，例如：標記超過設計容量 80% 的元素]
+輸出：[輸出格式，例如：Excel 報表，含元素名稱、軸力值、容量比]
+
+請確保腳本包含：
+1. 完整的 ETABS COM 連接流程
+2. 所有 API 調用的返回碼檢查
+3. 腳本結束時的資源釋放</code></pre>
+
+      <div class="code-label">提示語模板 C：迭代優化設計</div>
+      <pre><code>請撰寫 ETABS 迭代斷面優化腳本：
+
+優化目標：所有柱元素的應力比不超過 [閾值，例如 0.85]
+調整策略：若應力比超標，將斷面升一個規格
+最大迭代次數：20 次
+收斂後輸出：各元素最終斷面名稱與應力比清單</code></pre>
+
+      <div class="callout info">
+        <div class="callout-icon">💡</div>
+        <div class="callout-body">
+          <strong>提示語最佳實踐：</strong>提供明確的輸入條件（軟體版本、目標元素、設計閾值）與
+          輸出格式要求，AI 將能直接生成可執行的完整腳本，而非需要二次修改的框架代碼。
+        </div>
+      </div>
+    </section>
+
+    <!-- ══ 五、ETABS 實作案例 ══ -->
+    <section class="section" id="etabs-case">
+      <span class="section-number">Section 05</span>
+      <h2>ETABS <span class="accent-word">實作案例</span></h2>
+
+      <p>
+        以下以 <span class="accent-bold">ETABS v21 結構分析軟體</span>為例，
+        完整示範 MCP 的組成設計、導入設定與日常使用方法。
+        ETABS API 採用 <span class="accent-bold">Windows COM（組件對象模型）介面</span>，
+        透過 Python 的 <code>pywin32</code> 庫（<code>win32com.client</code>）與本地 ETABS 進行通信。
+      </p>
+
+      <div class="callout">
+        <div class="callout-icon">⚠️</div>
+        <div class="callout-body">
+          <strong>API 文件聲明：</strong>本案例基於 ETABS API Beginner Guide 2025 撰寫。
+          所有函式名稱、參數規格請以 CSI 官方 API 文件（ ETABS 安裝附帶）為最終依據。
+        </div>
+      </div>
+
+      <h3>5.1 ETABS MCP 的三層組成</h3>
+
+      <h4>主機（Host）</h4>
+      <p>
+        Claude AI 對話介面作為主機。工程師輸入自然語言指令後，
+        主機解析意圖、編排工具調用序列，並彙集來自 ETABS 的分析結果以生成工程報告。
+      </p>
+
+      <h4>客戶端（Client）</h4>
+      <p>
+        客戶端寄生於主機內，與 ETABS MCP 服務器維持連接狀態。
+        關鍵作用在於<span class="accent-bold">追蹤迭代優化的中間狀態</span>
+        （例如第幾次迭代、哪些元素已調整斷面），確保多步驟工作流不中斷。
+      </p>
+
+      <h4>服務器（Server）</h4>
+      <p>服務器透過 COM 介面連接本地 ETABS，提供以下三類能力：</p>
+
+      <p><strong style="color:var(--accent)">工具（Tools）——可執行操作</strong></p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>工具名稱</th>
+              <th>對應 ETABS API</th>
+              <th>功能說明</th>
+              <th>返回值</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>connect_etabs</td>
+              <td>GetActiveObject / Dispatch</td>
+              <td>連接或啟動 ETABS，初始化 SapModel</td>
+              <td>連接狀態、版本號</td>
+            </tr>
+            <tr>
+              <td>unlock_model</td>
+              <td>SetModelIsLocked(False)</td>
+              <td>解鎖模型以允許修改操作</td>
+              <td>ret（0=成功）</td>
+            </tr>
+            <tr>
+              <td>get_frame_sections</td>
+              <td>PropFrame.GetNameList()</td>
+              <td>獲取所有已定義的梁柱斷面名稱</td>
+              <td>斷面名稱陣列</td>
+            </tr>
+            <tr>
+              <td>get_frame_elements</td>
+              <td>FrameObj.GetNameList()</td>
+              <td>獲取所有框架元素（梁、柱、斜撐）</td>
+              <td>元素名稱陣列</td>
+            </tr>
+            <tr>
+              <td>run_analysis</td>
+              <td>Analyze.RunAnalysis()</td>
+              <td>執行結構分析計算</td>
+              <td>ret（0=成功）</td>
+            </tr>
+            <tr>
+              <td>get_results</td>
+              <td>Results.*</td>
+              <td>提取分析結果（內力、位移、反力）</td>
+              <td>結果數據集</td>
+            </tr>
+            <tr>
+              <td>modify_section</td>
+              <td>PropFrame.SetRectangle() 等</td>
+              <td>修改元素斷面屬性（用於迭代優化）</td>
+              <td>ret（0=成功）</td>
+            </tr>
+            <tr>
+              <td>close_etabs</td>
+              <td>ApplicationExit()</td>
+              <td>安全關閉 ETABS，釋放 COM 資源</td>
+              <td>關閉狀態</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p><strong style="color:var(--eng-blue)">資源（Resources）——可讀取數據</strong></p>
+      <ul class="advantage-list">
+        <li>模型基本信息：程序版本GetProgramVersion()、單位系統、全局座標設定</li>
+        <li>元素幾何數據：節點座標、框架元素起終點、面元素邊界定義</li>
+        <li>斷面與材料屬性：幾何參數（寬、高、厚度）、材料彈性模量與強度</li>
+        <li>分析結果數據集：各荷載組合下的節點反力、元素端部彎矩/剪力/軸力、層間位移角</li>
+      </ul>
+
+      <p><strong style="color:#27AE60">提示語（Prompts）——工程任務模板</strong></p>
+      <ul class="advantage-list">
+        <li><strong>自動化出報表</strong>提取所有荷載組合下的柱軸力，整理成表格，標記超過設計容量 80% 的元素</li>
+        <li><strong>迭代優化</strong>執行分析 → 檢查梁應力比 → 若超過 0.9 則斷面升一級 → 重新分析，直到全部合規</li>
+        <li><strong>數據驗證</strong>對比手算與 ETABS 輸出的基底剪力，允許誤差 ±5%，超出則報告差異</li>
+      </ul>
+
+      <h3>5.2 導入設定</h3>
+
+      <h4>環境需求</h4>
+      <ul class="steps">
+        <li>
+          <div class="step-num">1</div>
+          <p><strong>作業系統：</strong>Windows（ETABS COM 介面為 Windows 專屬）</p>
+        </li>
+        <li>
+          <div class="step-num">2</div>
+          <p><strong>軟體授權：</strong>已安裝並激活授權的 ETABS v21（COM API 功能整合於核心程序）</p>
+        </li>
+        <li>
+          <div class="step-num">3</div>
+          <p><strong>Python 環境：</strong>Python 3.8 以上版本，安裝 COM 橋接庫</p>
+        </li>
+      </ul>
+
+      <div class="code-label">安裝依賴套件</div>
+      <pre><code><span class="cm"># 安裝 Windows COM 橋接庫（pywin32）</span>
+pip install pywin32
+
+<span class="cm"># 安裝數據處理與報表套件（選用）</span>
+pip install pandas openpyxl matplotlib</code></pre>
+
+      <h3>5.3 連接初始化代碼</h3>
+      <div class="code-label">Step 1–4：建立 ETABS 連接</div>
+      <pre><code><span class="kw">import</span> win32com.client
+
+<span class="cm"># Step 1：載入 COM 橋接庫</span>
+<span class="cm"># Step 2：嘗試連接已運行的 ETABS 實例</span>
+<span class="kw">try</span>:
+    myETABSObject = win32com.client.<span class="fn">GetActiveObject</span>(
+        <span class="str">"CSI.ETABS.API.ETABSObject"</span>
+    )
+    <span class="fn">print</span>(<span class="str">"已連接至現有 ETABS 實例"</span>)
+
+<span class="kw">except</span> <span class="cls">Exception</span>:
+    <span class="cm"># 若無運行實例，啟動新實例</span>
+    <span class="fn">print</span>(<span class="str">"啟動新 ETABS 實例..."</span>)
+    myETABSObject = win32com.client.<span class="fn">Dispatch</span>(
+        <span class="str">"CSI.ETABS.API.ETABSObject"</span>
+    )
+
+<span class="cm"># Step 3：初始化 SapModel 核心控制物件</span>
+SapModel = myETABSObject.SapModel
+
+<span class="cm"># Step 4：驗證連接成功</span>
+version = SapModel.<span class="fn">GetProgramVersion</span>()
+<span class="fn">print</span>(<span class="str">f"連接成功，ETABS 版本：{version}"</span>)
+
+<span class="cm"># 解鎖模型（若需要修改）</span>
+SapModel.<span class="fn">SetModelIsLocked</span>(<span class="kw">False</span>)</code></pre>
+
+      <h3>5.4 返回值檢查規範</h3>
+      <div class="code-label">正確的 API 調用與錯誤處理</div>
+      <pre><code><span class="cm"># ✅ 正確：檢查返回碼</span>
+[ret, ListOfNames] = SapModel.FrameObj.<span class="fn">GetNameList</span>()
+
+<span class="kw">if</span> ret != <span class="num">0</span>:
+    <span class="kw">raise</span> <span class="cls">Exception</span>(<span class="str">f"API 調用失敗，錯誤代碼：{ret}"</span>)
+<span class="kw">else</span>:
+    <span class="fn">print</span>(<span class="str">f"共找到 {len(ListOfNames)} 個框架元素"</span>)
+
+<span class="cm"># ❌ 錯誤：省略返回碼（可能掩蓋錯誤）</span>
+<span class="cm"># ListOfNames = SapModel.FrameObj.GetNameList()</span></code></pre>
+
+      <h3>5.5 完整工作流示例：迭代斷面優化</h3>
+      <div class="flow-diagram">
+        <div class="flow-step host">🖥️ 主機（Host） <span class="flow-label">Claude AI</span> 接收指令：「優化所有柱斷面，應力比 ≤ 0.85」</div>
+        <div class="flow-arrow">↓</div>
+        <div class="flow-step client">🔗 客戶端（Client） 建立有狀態會話，追蹤迭代進度，路由工具調用序列</div>
+        <div class="flow-arrow">↓</div>
+        <div class="flow-step server">⚙️ 服務器（Server） <span class="flow-label">COM 介面</span> Step 1：unlock_model</div>
+        <div class="flow-arrow">↓</div>
+        <div class="flow-step server">⚙️ 服務器（Server） Step 2：run_analysis → Analyze.RunAnalysis()</div>
+        <div class="flow-arrow">↓</div>
+        <div class="flow-step server">⚙️ 服務器（Server） Step 3：get_results → 提取所有柱的應力比</div>
+        <div class="flow-arrow">↓</div>
+        <div class="flow-step client">🔗 客戶端（Client） 判斷：所有應力比 ≤ 0.85？</div>
+        <div class="flow-arrow">↓ 若否，回到 Step 2（最多 20 次）</div>
+        <div class="flow-step server">⚙️ 服務器（Server） Step 4：modify_section → 超標柱斷面升一級</div>
+        <div class="flow-arrow">↓ 收斂後</div>
+        <div class="flow-step host">🖥️ 主機（Host） 回報工程師：迭代次數、各柱最終斷面、應力比清單</div>
+      </div>
+
+      <div class="code-label">迭代優化腳本（完整版）</div>
+      <pre><code><span class="kw">import</span> win32com.client
+
+<span class="cm"># ── 連接 ETABS ──</span>
+<span class="kw">try</span>:
+    myETABSObject = win32com.client.<span class="fn">GetActiveObject</span>(
+        <span class="str">"CSI.ETABS.API.ETABSObject"</span>
+    )
+<span class="kw">except</span>:
+    myETABSObject = win32com.client.<span class="fn">Dispatch</span>(
+        <span class="str">"CSI.ETABS.API.ETABSObject"</span>
+    )
+
+SapModel = myETABSObject.SapModel
+SapModel.<span class="fn">SetModelIsLocked</span>(<span class="kw">False</span>)
+
+<span class="cm"># ── 迭代優化參數 ──</span>
+STRESS_RATIO_LIMIT = <span class="num">0.85</span>   <span class="cm"># 應力比上限</span>
+MAX_ITERATIONS    = <span class="num">20</span>      <span class="cm"># 最大迭代次數（終止條件）</span>
+iteration         = <span class="num">0</span>
+converged         = <span class="kw">False</span>
+
+<span class="kw">while</span> iteration < MAX_ITERATIONS <span class="kw">and not</span> converged:
+    iteration += <span class="num">1</span>
+    <span class="fn">print</span>(<span class="str">f"\n── 迭代第 {iteration} 次 ──"</span>)
+
+    <span class="cm"># Step 1：執行分析</span>
+    ret = SapModel.Analyze.<span class="fn">RunAnalysis</span>()
+    <span class="kw">if</span> ret != <span class="num">0</span>:
+        <span class="kw">raise</span> <span class="cls">Exception</span>(<span class="str">f"分析失敗，錯誤代碼：{ret}"</span>)
+
+    <span class="cm"># Step 2：提取結果（此處為示意，實際函式依 API 文件）</span>
+    [ret, elem_names] = SapModel.FrameObj.<span class="fn">GetNameList</span>()
+    <span class="kw">if</span> ret != <span class="num">0</span>:
+        <span class="kw">raise</span> <span class="cls">Exception</span>(<span class="str">f"元素清單取得失敗：{ret}"</span>)
+
+    <span class="cm"># Step 3：檢查應力比（示意）</span>
+    violations = []
+    <span class="kw">for</span> name <span class="kw">in</span> elem_names:
+        stress_ratio = <span class="fn">get_stress_ratio</span>(SapModel, name)
+        <span class="kw">if</span> stress_ratio > STRESS_RATIO_LIMIT:
+            violations.<span class="fn">append</span>(name)
+
+    <span class="cm"># Step 4：判斷是否收斂</span>
+    <span class="kw">if</span> <span class="fn">len</span>(violations) == <span class="num">0</span>:
+        converged = <span class="kw">True</span>
+        <span class="fn">print</span>(<span class="str">f"✅ 收斂！所有元素應力比均 ≤ {STRESS_RATIO_LIMIT}"</span>)
+    <span class="kw">else</span>:
+        <span class="fn">print</span>(<span class="str">f"⚠️  {len(violations)} 個元素超標，升級斷面中..."</span>)
+        <span class="kw">for</span> name <span class="kw">in</span> violations:
+            <span class="fn">upgrade_section</span>(SapModel, name)
+
+<span class="cm"># ── 發散處理 ──</span>
+<span class="kw">if not</span> converged:
+    <span class="fn">print</span>(<span class="str">f"❌ 達到最大迭代次數 {MAX_ITERATIONS} 次，設計未收斂，請人工複核。"</span>)
+
+<span class="cm"># ── 資源釋放（必須執行）──</span>
+myETABSObject.<span class="fn">ApplicationExit</span>()   <span class="cm"># 關閉 ETABS 實例</span>
+myETABSObject = <span class="kw">None</span>               <span class="cm"># 釋放 COM 物件引用</span>
+<span class="fn">print</span>(<span class="str">"連接已關閉，資源已釋放。"</span>)</code></pre>
+
+      <h3>5.6 使用注意事項</h3>
+      <div class="notice-grid">
+        <div class="notice-card">
+          <div class="notice-icon">🪟</div>
+          <div class="notice-content">
+            <div class="notice-title">僅支援 Windows 平台</div>
+            <div class="notice-desc">ETABS COM 介面為 Windows 專屬技術，無法在 macOS 或 Linux 上運行</div>
+          </div>
+        </div>
+        <div class="notice-card">
+          <div class="notice-icon">🔑</div>
+          <div class="notice-content">
+            <div class="notice-title">必須持有有效授權</div>
+            <div class="notice-desc">COM API 功能整合於已授權的 ETABS 核心程序，無授權版本無法使用</div>
+          </div>
+        </div>
+        <div class="notice-card">
+          <div class="notice-icon">✅</div>
+          <div class="notice-content">
+            <div class="notice-title">所有 API 調用必須驗證返回碼</div>
+            <div class="notice-desc">ret ≠ 0 表示失敗，必須捕獲並記錄，不得忽略</div>
+          </div>
+        </div>
+        <div class="notice-card">
+          <div class="notice-icon">🔓</div>
+          <div class="notice-content">
+            <div class="notice-title">修改前必須解鎖模型</div>
+            <div class="notice-desc">呼叫 <code style="background:rgba(0,0,0,0.08);padding:1px 5px;border-radius:3px;font-family:var(--font-mono);font-size:12px;">SetModelIsLocked(False)</code> 後才能進行任何修改操作</div>
+          </div>
+        </div>
+        <div class="notice-card">
+          <div class="notice-icon">🧹</div>
+          <div class="notice-content">
+            <div class="notice-title">腳本結束時必須釋放資源</div>
+            <div class="notice-desc">未執行 <code style="background:rgba(0,0,0,0.08);padding:1px 5px;border-radius:3px;font-family:var(--font-mono);font-size:12px;">ApplicationExit()</code> 將導致 ETABS 在背景持續占用記憶體</div>
+          </div>
+        </div>
+        <div class="notice-card">
+          <div class="notice-icon">📖</div>
+          <div class="notice-content">
+            <div class="notice-title">API 函式名稱以官方文件為準</div>
+            <div class="notice-desc">本文所列函式名稱以參考文件為依據，正式使用前請查閱 CSI 官方 API 手冊</div>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ══ 六、結論與建議 ══ -->
+    <section class="section" id="conclusion">
+      <span class="section-number">Section 06</span>
+      <h2>結論與<span class="accent-word">建議</span></h2>
+
+      <p>
+        本文系統性地探討了 MCP 協議在土木工程專業軟體自動化領域的應用潛力，
+        從架構原理到 Claude Project 協作設定，再到 ETABS 的完整實作案例，
+        可歸納出以下核心結論與分階段導入建議。
+      </p>
+
+      <h3>6.1 核心結論</h3>
+
+      <div class="conclusion-grid">
+        <div class="conclusion-card">
+          <div class="conclusion-num">01</div>
+          <div class="conclusion-body">
+            <div class="conclusion-title">MCP 是工程 AI 整合的關鍵基礎設施</div>
+            <p>MCP 的三層架構（Host-Client-Server）提供了一套語言無關、軟體無關的通用橋接標準，使 AI 大模型得以透過統一協議驅動 ETABS、ANSYS、SAP2000 等異質工程軟體，<span class="accent-bold">徹底解決了 AI 與專業工具之間的整合碎片化問題</span>。</p>
+          </div>
+        </div>
+        <div class="conclusion-card">
+          <div class="conclusion-num">02</div>
+          <div class="conclusion-body">
+            <div class="conclusion-title">自然語言成為新的工程操作介面</div>
+            <p>透過 MCP，工程師無需學習 API 語法或撰寫腳本，僅需以自然語言描述任務目標，AI 即可自動規劃並執行多步驟工作流。<span class="accent-bold">這從根本上降低了工程自動化的技術門檻</span>，讓非程式背景的土木工程師也能受益。</p>
+          </div>
+        </div>
+        <div class="conclusion-card">
+          <div class="conclusion-num">03</div>
+          <div class="conclusion-body">
+            <div class="conclusion-title">Claude Project 是知識管理的有效載體</div>
+            <p>將 MCP 架構知識庫、API 文件摘要與 Custom Instructions 集中於 Claude Project，使每次對話都能在一致的工程知識背景下進行。<span class="accent-bold">這種「知識即配置」的協作模式，大幅縮短了工程師與 AI 之間的溝通成本</span>。</p>
+          </div>
+        </div>
+        <div class="conclusion-card">
+          <div class="conclusion-num">04</div>
+          <div class="conclusion-body">
+            <div class="conclusion-title">效益顯著但需正視技術前提</div>
+            <p>ETABS 案例驗證了 MCP 可節省 40% 例行工時並提升 2–3 倍生產力，但<span class="accent-bold">成效高度依賴 API 文件的完整性、返回碼的正確處理，以及資源釋放流程的嚴格執行</span>。技術基礎不牢固將導致腳本不穩定。</p>
+          </div>
+        </div>
+      </div>
+
+      <h3>6.2 分階段導入建議</h3>
+
+      <div class="phase-list">
+
+        <div class="phase-item">
+          <div class="phase-header">
+            <div class="phase-badge phase-1">Phase 1</div>
+            <div class="phase-title">基礎建置期（第 1 個月）</div>
+          </div>
+          <div class="phase-body">
+            <ul class="phase-tasks">
+              <li>確認目標軟體的 API 介面類型（COM / REST / SDK），取得官方文件</li>
+              <li>建立 Claude Project，上傳 MCP 架構知識庫與 API 文件摘要</li>
+              <li>設定 Custom Instructions，定義 AI 角色與禁止事項</li>
+              <li>完成連接初始化測試，驗證 <code style="background:rgba(0,0,0,0.08);padding:1px 4px;border-radius:3px;font-family:var(--font-mono);font-size:12px;">GetProgramVersion()</code> 等基礎調用</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="phase-item">
+          <div class="phase-header">
+            <div class="phase-badge phase-2">Phase 2</div>
+            <div class="phase-title">應用測試期（第 2–3 個月）</div>
+          </div>
+          <div class="phase-body">
+            <ul class="phase-tasks">
+              <li>選擇 1–2 個高重複性工作流作為測試點（建議從「自動出報表」起步）</li>
+              <li>建立標準提示語模板庫，積累 Project Knowledge</li>
+              <li>針對常見錯誤碼建立處理查詢表，完善錯誤回報機制</li>
+              <li>收集工程師使用回饋，迭代優化 Custom Instructions</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="phase-item">
+          <div class="phase-header">
+            <div class="phase-badge phase-3">Phase 3</div>
+            <div class="phase-title">全面推廣期（第 4 個月起）</div>
+          </div>
+          <div class="phase-body">
+            <ul class="phase-tasks">
+              <li>擴展至迭代設計優化、法規合規檢查等複雜工作流</li>
+              <li>探索跨軟體整合（如 ETABS → Revit 的 BIM 數據交換）</li>
+              <li>建立組織級的 MCP 知識庫，系統化沉澱工程自動化經驗</li>
+              <li>評估導入 CI/CD 概念，將關鍵工作流納入版本控制管理</li>
+            </ul>
+          </div>
+        </div>
+
+      </div>
+
+      <h3>6.3 風險提示與因應策略</h3>
+
+      <!-- 桌面版表格（窄螢幕自動隱藏） -->
+      <div class="table-wrap risk-table-desktop">
+        <table>
+          <thead>
+            <tr>
+              <th>風險項目</th>
+              <th>潛在影響</th>
+              <th>因應策略</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>API 函式名稱過時</td>
+              <td>腳本執行失敗、模型修改錯誤</td>
+              <td>每次軟體版本升級後重新核對 API 文件，禁止依賴訓練資料中的函式名稱</td>
+            </tr>
+            <tr>
+              <td>返回碼未處理</td>
+              <td>錯誤被掩蓋，產生錯誤分析結果</td>
+              <td>Custom Instructions 強制要求所有 API 調用附帶 ret ≠ 0 檢查</td>
+            </tr>
+            <tr>
+              <td>資源洩漏</td>
+              <td>ETABS 進程殘留，系統記憶體耗盡</td>
+              <td>所有腳本末尾必須執行 ApplicationExit()，並納入品質檢核清單</td>
+            </tr>
+            <tr>
+              <td>迭代不收斂</td>
+              <td>無限循環，阻塞工作流</td>
+              <td>所有迭代流程設定上限（建議 20 次），達到上限觸發人工複核警示</td>
+            </tr>
+            <tr>
+              <td>過度依賴 AI 判斷</td>
+              <td>工程判斷責任模糊，恐有合規風險</td>
+              <td>AI 負責執行與彙整，<span class="accent-bold">最終工程判斷與簽署責任仍由持照技師承擔</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- 手機版卡片（寬螢幕自動隱藏） -->
+      <div class="risk-card-mobile">
+
+        <div class="risk-card">
+          <div class="risk-card-title">API 函式名稱過時</div>
+          <div class="risk-card-row">
+            <span class="risk-card-label">潛在影響</span>
+            <span class="risk-card-value">腳本執行失敗、模型修改錯誤</span>
+          </div>
+          <div class="risk-card-row">
+            <span class="risk-card-label">因應策略</span>
+            <span class="risk-card-value">每次軟體版本升級後重新核對 API 文件，禁止依賴訓練資料中的函式名稱</span>
+          </div>
+        </div>
+
+        <div class="risk-card">
+          <div class="risk-card-title">返回碼未處理</div>
+          <div class="risk-card-row">
+            <span class="risk-card-label">潛在影響</span>
+            <span class="risk-card-value">錯誤被掩蓋，產生錯誤分析結果</span>
+          </div>
+          <div class="risk-card-row">
+            <span class="risk-card-label">因應策略</span>
+            <span class="risk-card-value">Custom Instructions 強制要求所有 API 調用附帶 ret ≠ 0 檢查</span>
+          </div>
+        </div>
+
+        <div class="risk-card">
+          <div class="risk-card-title">資源洩漏</div>
+          <div class="risk-card-row">
+            <span class="risk-card-label">潛在影響</span>
+            <span class="risk-card-value">ETABS 進程殘留，系統記憶體耗盡</span>
+          </div>
+          <div class="risk-card-row">
+            <span class="risk-card-label">因應策略</span>
+            <span class="risk-card-value">所有腳本末尾必須執行 ApplicationExit()，並納入品質檢核清單</span>
+          </div>
+        </div>
+
+        <div class="risk-card">
+          <div class="risk-card-title">迭代不收斂</div>
+          <div class="risk-card-row">
+            <span class="risk-card-label">潛在影響</span>
+            <span class="risk-card-value">無限循環，阻塞工作流</span>
+          </div>
+          <div class="risk-card-row">
+            <span class="risk-card-label">因應策略</span>
+            <span class="risk-card-value">所有迭代流程設定上限（建議 20 次），達到上限觸發人工複核警示</span>
+          </div>
+        </div>
+
+        <div class="risk-card">
+          <div class="risk-card-title">過度依賴 AI 判斷</div>
+          <div class="risk-card-row">
+            <span class="risk-card-label">潛在影響</span>
+            <span class="risk-card-value">工程判斷責任模糊，恐有合規風險</span>
+          </div>
+          <div class="risk-card-row">
+            <span class="risk-card-label">因應策略</span>
+            <span class="risk-card-value">AI 負責執行與彙整，<span class="accent-bold">最終工程判斷與簽署責任仍由持照技師承擔</span></span>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="callout">
+        <div class="callout-icon">🏗️</div>
+        <div class="callout-body">
+          <strong>總結展望：</strong>MCP 與 AI 大模型的結合，正在將土木工程的工作模式從「人驅動軟體」轉型為
+          「人定義目標、AI 驅動軟體」。未來隨著更多工程軟體開放 API 介面，以及 MCP 生態系統持續成熟，
+          <strong>跨軟體、跨專業的 AI 協作工程平台</strong>將成為土木工程數位轉型的核心基礎設施。
+          工程師應把握當前視窗期，率先建立 AI 協作能力，以在下一波技術浪潮中取得競爭優勢。
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ══ 七、參考文獻 ══ -->
+    <section class="section" id="references-section">
+      <span class="section-number">References</span>
+      <h2>參考<span class="accent-word">文獻</span></h2>
+      <div class="references">
+
+        <div class="ref-item">
+          <span class="ref-num">[1]</span>
+          <div class="ref-body">
+            Anthropic. (2024). <em>Model Context Protocol (MCP) — Official Specification</em>. MCP Protocol Documentation.
+            <a class="ref-url" href="https://modelcontextprotocol.io" target="_blank">https://modelcontextprotocol.io</a>
+          </div>
+        </div>
+
+        <div class="ref-item">
+          <span class="ref-num">[2]</span>
+          <div class="ref-body">
+            Anthropic. (2024). <em>MCP Architecture: Host-Client-Server Design</em>. MCP Specification, Section: Architecture.
+            <a class="ref-url" href="https://modelcontextprotocol.io/specification/2025-11-25/architecture" target="_blank">https://modelcontextprotocol.io/specification/2025-11-25/architecture</a>
+          </div>
+        </div>
+
+        <div class="ref-item">
+          <span class="ref-num">[3]</span>
+          <div class="ref-body">
+            stru.ai. (2025). <em>ETABS API Beginner Guide</em>. Structural AI Blog.
+            <a class="ref-url" href="https://stru.ai/blog/etabs-api-beginner-guide" target="_blank">https://stru.ai/blog/etabs-api-beginner-guide</a>
+          </div>
+        </div>
+
+        <div class="ref-item">
+          <span class="ref-num">[4]</span>
+          <div class="ref-body">
+            Computers and Structures, Inc. (CSI). (2024). <em>ETABS Application Programming Interface (API) — CSi API Reference Manual</em>. Computers and Structures, Inc., Berkeley, California.
+            <span class="ref-url">ETABS 安裝附帶文件，儲存在：安裝目錄 \CSi API Documentation\</span>
+          </div>
+        </div>
+
+        <div class="ref-item">
+          <span class="ref-num">[5]</span>
+          <div class="ref-body">
+            Microsoft Corporation. (2024). <em>Component Object Model (COM) — Windows Developer Documentation</em>. Microsoft Learn.
+            <a class="ref-url" href="https://learn.microsoft.com/en-us/windows/win32/com/component-object-model--com--portal" target="_blank">https://learn.microsoft.com/en-us/windows/win32/com/</a>
+          </div>
+        </div>
+
+        <div class="ref-item">
+          <span class="ref-num">[6]</span>
+          <div class="ref-body">
+            Python Software Foundation. (2024). <em>pywin32 — Python for Windows Extensions</em>. PyPI Package Repository.
+            <a class="ref-url" href="https://pypi.org/project/pywin32/" target="_blank">https://pypi.org/project/pywin32/</a>
+          </div>
+        </div>
+
+        <div class="ref-item">
+          <span class="ref-num">[7]</span>
+          <div class="ref-body">
+            IETF / JSON-RPC Working Group. (2013). <em>JSON-RPC 2.0 Specification</em>.
+            <a class="ref-url" href="https://www.jsonrpc.org/specification" target="_blank">https://www.jsonrpc.org/specification</a>
+          </div>
+        </div>
+
+        <div class="ref-item">
+          <span class="ref-num">[8]</span>
+          <div class="ref-body">
+            Microsoft. (2024). <em>Language Server Protocol (LSP) Specification</em>. Microsoft GitHub.
+            <a class="ref-url" href="https://microsoft.github.io/language-server-protocol/" target="_blank">https://microsoft.github.io/language-server-protocol/</a>
+          </div>
+        </div>
+
+        <div class="ref-item">
+          <span class="ref-num">[9]</span>
+          <div class="ref-body">
+            Anthropic. (2024). <em>Collaborate with Claude on Projects</em>. Anthropic News.
+            <a class="ref-url" href="https://www.anthropic.com/news/projects" target="_blank">https://www.anthropic.com/news/projects</a>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+  </article>
+</div>
+
+<!-- 頁尾 -->
+<footer>
+  <p>
+    <strong>高雄市土木技師公會•0372張朝順</strong><br>
+  </p>
+</footer>
+
+</body>
+</html>
